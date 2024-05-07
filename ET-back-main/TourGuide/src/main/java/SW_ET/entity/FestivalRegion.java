@@ -17,12 +17,12 @@ public class FestivalRegion {
     @Column(name = "fr_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
     private Long id; // 중간 테이블의 ID
 
-    @ManyToOne
-    @JoinColumn(name = "fesival_id", nullable = false) // 축제 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "fesival_id", nullable = false, columnDefinition = "INT UNSIGNED") // 축제 ID를 FK로 받음
     private Festival festival;
 
-    @ManyToOne
-    @JoinColumn(name = "region_id", nullable = false) // 지역 ID를 FK로
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false, columnDefinition = "INT UNSIGNED") // 지역 ID를 FK로
     private Region region;
 
 }

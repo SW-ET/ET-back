@@ -15,11 +15,11 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 자동 증가 설정
-    @Column(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")
+    @Column(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
     private Long id; // 리뷰 ID
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) // 사용자 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED ") // 사용자 ID를 FK로 받음
     private User user; // 유저 정보
 
     @Column(name = "views", nullable = false, columnDefinition = "INT UNSIGNED")
@@ -39,13 +39,13 @@ public class Review {
     private LocalDateTime reviewDateModi; // 수정 일자
 
     @Column(name = "likes", nullable = false, columnDefinition = "INT UNSIGNED")
-    private Long likes; // 추천
+    private Long likeNumber; // 추천
 
     @Column(name = "dislikes", nullable = false, columnDefinition = "INT UNSIGNED")
-    private Long dislikes; // 비추천
+    private Long dislikeNumber; // 비추천
 
-    @ManyToOne
-    @JoinColumn(name = "destination_id", nullable = false) // 여행지 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED") // 여행지 ID를 FK로 받음
     private Destination destination; // 여행지 정보
 
     @Column(name = "use_yn", nullable = false, length = 1)

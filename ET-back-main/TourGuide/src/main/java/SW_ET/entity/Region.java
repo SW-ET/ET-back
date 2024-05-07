@@ -13,13 +13,13 @@ public class Region {
 
     @Id
     @GeneratedValue
-    @Column(name = "region_id", nullable = false, columnDefinition  = "INT UNSGINED AUTO_INCREMENT")
-    private Long id;
+    @Column(name = "region_id", nullable = false, columnDefinition  = "INT UNSIGNED AUTO_INCREMENT")
+    private Long regionId;
 
     @Column(name = "region", nullable = false, length = 255)
     private String region;
 
     @Column(name = "sub_region", nullable = false, length = 255)
-    private String subregion;
+    private String subRegion;
 
 }

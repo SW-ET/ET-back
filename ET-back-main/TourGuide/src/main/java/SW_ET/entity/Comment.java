@@ -17,16 +17,17 @@ public class Comment {
     @Column(name = "comment_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
     private Long id;  // 댓글 ID
 
-    @ManyToOne
-    @JoinColumn(name = "parent_comment_id", nullable = true)  // 상위 댓글 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_comment_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 상위 댓글 ID를 FK로 받음
     private Comment parentComment;  // 상위 댓글
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)  // 사용자 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 사용자 ID를 FK로 받음
     private User user;  // 유저 정보
 
-    @ManyToOne // comment : 다 , review : 일
-    @JoinColumn(name = "review_id", nullable = false)  // 리뷰 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    // comment : 다 , review : 일
+    @JoinColumn(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 리뷰 ID를 FK로 받음
     private Review review;  // 리뷰 정보
 
     @Lob

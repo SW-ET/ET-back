@@ -16,12 +16,12 @@ public class DestinationRegion {
     @Column(name = "dr_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
     private Long id; // 중간 테이블의 ID
 
-    @ManyToOne
-    @JoinColumn(name = "destination_id", nullable = false) // 여행지 ID를 FK로
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED") // 여행지 ID를 FK로
     private Destination destination;
 
-    @ManyToOne
-    @JoinColumn(name = "region_id", nullable = false) // 지역 ID를 FK로
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id", nullable = false, columnDefinition = "INT UNSIGNED") // 지역 ID를 FK로
     private Region region;
 
 }

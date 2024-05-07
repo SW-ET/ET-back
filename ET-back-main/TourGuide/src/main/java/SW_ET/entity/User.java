@@ -1,33 +1,29 @@
 package SW_ET.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDate;
 
+@Data
 @Entity
 @Table(name="Users")
-@Getter
-@Setter
 public class User {
 
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)   //자동 증가 설정
-        @Column(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED")
-        private Long id;  // 사용자 ID (기본 키)
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+        private Long userId;
 
         @Column(name = "user_name", nullable = false, unique = true, length = 255)
-        private String username;  //사용자 이름 , 유니크 키 지정 해서 중복 x
+        private String userName;
 
-        @Column(name = "email", nullable = false, unique = true, length = 255)
-        private String email;  //사용자 이메일
+        @Column(name = "user_email", nullable = false, unique = true, length = 255)
+        private String userEmail;
 
-        @Column(name = "password", nullable = false, length = 255)
-        private String password;  //사용자 비밀번호
+        @Column(name = "user_password", nullable = false, length = 255)
+        private String userPassword;
 
-        @Column(name = "regist_date", nullable = false, columnDefinition = "DATE DEFAULT CURDATE()")
-        // 가입일자를 자동으로 현재 날짜 저장.
-        private LocalDate registDate;  //가입 일자
-
+        @Column(name = "regist_date", nullable = false)
+        private LocalDate registDate = LocalDate.now();
 }

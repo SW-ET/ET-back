@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "Fstival")
+@Table
 @Getter
 @Setter
 public class Festival {
@@ -13,7 +13,7 @@ public class Festival {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  //자동 증가 설정
     @Column(name = "festival_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
-    private Long id;  // 축제 ID
+    private Long festivalId;  // 축제 ID
 
     @Column(name = "festival_name", nullable = false, length = 255)
     private String name;  // 축제이름

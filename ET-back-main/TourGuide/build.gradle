@@ -1,6 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '3.2.5'
+	id 'org.springframework.boot' version '3.0.1'
 	id 'io.spring.dependency-management' version '1.1.4'
 }
 
@@ -29,11 +29,23 @@ dependencies {
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'mysql:mysql-connector-java'  // MySQL 의존성 추가
+	runtimeOnly 'mysql:mysql-connector-java:8.0.30' // 현재 가장 안정적인 버전 사용
 	annotationProcessor 'org.projectlombok:lombok'
+	implementation 'org.hibernate.validator:hibernate-validator:7.0.1.Final'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	implementation 'org.glassfish:jakarta.el:4.0.2' // 버전 명시적 지정
+	implementation 'org.springframework.security:spring-security-crypto'
 	testImplementation 'org.springframework.security:spring-security-test'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.2' // 버전 명시적 지정
+	implementation 'io.springfox:springfox-boot-starter:3.0.0'
+	compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation group: 'org.mybatis.spring.boot', name: 'mybatis-spring-boot-starter', version: '2.2.0'
+	implementation group: 'org.mariadb.jdbc', name: 'mariadb-java-client', version: '2.3.0'
+	implementation group: 'org.mybatis', name: 'mybatis-typehandlers-jsr310', version: '1.0.2'
+	implementation group: 'org.mybatis', name: 'mybatis-spring', version: '2.0.6'
 }
+
 
 tasks.named('test') {
 	useJUnitPlatform()

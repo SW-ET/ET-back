@@ -10,7 +10,7 @@ public class Rating {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  // 자동 증가 설정
     @Column(name = "rating_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
-    private Long id; // 평점 고유 식별자
+    private Long ratingId; // 평점 고유 식별자
 
     @Column(name = "item_type", nullable = false, length = 255)
     private String itemType;  // 항목 평점 유형
@@ -22,20 +22,20 @@ public class Rating {
     private Double rating;  // 평점
 
     @Column(name = "comment", nullable = true, columnDefinition = "TEXT")
-    private String comment;  // 코멘트
+    private String ratingComment;  // 코멘트
 
     @Column(name = "comment_at", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime commentAt;  // 생성 시간
+    private LocalDateTime ratingCommentAt;  // 생성 시간
 
-    @ManyToOne
-    @JoinColumn(name = "destination_id", nullable = true)  // 여행지 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 여행지 ID를 FK로 받음
     private Destination destination;  // 여행지 정보
 
-    @ManyToOne
-    @JoinColumn(name = "festival_id", nullable = true)  // 축제 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "festival_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 축제 ID를 FK로 받음
     private Festival festival;  // 축제 정보
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)  // 유저 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 유저 ID를 FK로 받음
     private User user;  // 유저 정보
 }

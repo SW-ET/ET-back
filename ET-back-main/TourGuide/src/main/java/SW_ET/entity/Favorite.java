@@ -23,20 +23,20 @@ public class Favorite {
     @Column(name = "created_at" , nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;   // 생성 일자
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false) // 유저 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED") // 유저 ID를 FK로 받음
     private User user; // 유저 정보
 
-    @ManyToOne
-    @JoinColumn(name = "destination_id", nullable = true)  // 여행지 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 여행지 ID를 FK로 받음
     private Destination destination;  // 여행지 정보
 
-    @ManyToOne
-    @JoinColumn(name = "festival_id", nullable = true)  // 축제 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "festival_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 축제 ID를 FK로 받음
     private Festival festival;  // 축제 정보
 
-    @ManyToOne
-    @JoinColumn(name = "review_id", nullable = true)  // 리뷰 ID를 FK로 받음
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 리뷰 ID를 FK로 받음
     private Review review;  // 리뷰 정보
 
 
