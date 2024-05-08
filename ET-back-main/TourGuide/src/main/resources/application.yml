@@ -17,6 +17,13 @@ spring:
           sharedCache:
             mode: ALL  # JPA 공유 캐시 모드 설정
 
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false  # 개발 중 캐시 비활성화
+
   security:
     user:
       name: admin  # 기본 관리자 사용자 이름
@@ -37,4 +44,3 @@ logging:
     org.hibernate.SQL: DEBUG  # Hibernate SQL 쿼리 로깅 수준
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"  # 콘솔 로그 출력 패턴
-
