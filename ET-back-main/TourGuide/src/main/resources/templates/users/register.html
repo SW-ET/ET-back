@@ -13,13 +13,20 @@
     <input type="text" id="userId" name="userId" required>
     <button type="button" onclick="checkUserId()">Check ID</button>
     <br>
+    <label for="userEmail">Email:</label>
+    <input type="email" id="userEmail" name="userEmail" required>
+    <button type="button" onclick="sendVerificationCode()">Send Verification Code</button>
+    <br>
+    <label for="verificationCode">Verification Code:</label>
+    <input type="text" id="verificationCode" required>
+    <br>
     <label for="userPassword">Password:</label>
     <input type="password" id="userPassword" name="userPassword" required>
     <br>
     <label for="confirmPassword">Confirm Password:</label>
     <input type="password" id="confirmPassword" required>
     <br>
-    <button type="submit" onclick="return validatePassword()">Register</button>
+    <button type="submit" onclick="return validateForm()">Register</button>
 </form>
 
 <script>
@@ -28,13 +35,24 @@
         // AJAX call to check userId
     }
 
-    function validatePassword() {
+    function sendVerificationCode() {
+        var email = document.getElementById('userEmail').value;
+        // AJAX call to send verification code to the email
+    }
+
+    function validateForm() {
         var password = document.getElementById('userPassword').value;
         var confirmPassword = document.getElementById('confirmPassword').value;
+        var verificationCode = document.getElementById('verificationCode').value;
+
         if (password !== confirmPassword) {
             alert('Passwords do not match.');
             return false;
         }
+
+        // Optionally, verify the verification code here before submitting
+        // Or, the server can handle the verification upon form submission
+
         return true;
     }
 </script>
