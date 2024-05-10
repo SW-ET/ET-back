@@ -23,14 +23,16 @@ public class SpringSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
+                        // Swagger 경로 허용
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs").permitAll()
                         // "/login", "/users/register", "/resources/**" 경로에 대한 접근은 인증 없이 허용합니다.
-                        .requestMatchers("/login", "/users/register", "/resources/**").permitAll()
+                        .requestMatchers("/users/login", "/users/register", "/resources/**").permitAll()
                         // 그 외 모든 요청은 인증된 사용자만 접근 가능하도록 요구합니다.
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         // 사용자 정의 로그인 페이지의 URL을 설정합니다.
-                        .loginPage("/login")
+                        .loginPage("/users/login")
                         .permitAll()
                         // 로그인 폼이 제출될 URL을 설정합니다.
                         .loginProcessingUrl("/login_proc")

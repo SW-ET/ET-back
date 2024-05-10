@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Register</title>
+</head>
+<body>
+<h1>Register</h1>
+<form th:action="@{/users/register}" method="post">
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" name="userName" required>
+    <br>
+    <label for="userId">User ID:</label>
+    <input type="text" id="userId" name="userId" required>
+    <button type="button" onclick="checkUserId()">Check ID</button>
+    <br>
+    <label for="userPassword">Password:</label>
+    <input type="password" id="userPassword" name="userPassword" required>
+    <br>
+    <label for="confirmPassword">Confirm Password:</label>
+    <input type="password" id="confirmPassword" required>
+    <br>
+    <button type="submit" onclick="return validatePassword()">Register</button>
+</form>
+
+<script>
+    function checkUserId() {
+        var userId = document.getElementById('userId').value;
+        // AJAX call to check userId
+    }
+
+    function validatePassword() {
+        var password = document.getElementById('userPassword').value;
+        var confirmPassword = document.getElementById('confirmPassword').value;
+        if (password !== confirmPassword) {
+            alert('Passwords do not match.');
+            return false;
+        }
+        return true;
+    }
+</script>
+</body>
+</html>

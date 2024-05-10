@@ -19,7 +19,7 @@ public class Review {
     private Long id; // 리뷰 ID
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED ") // 사용자 ID를 FK로 받음
+    @JoinColumn(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED ") // 사용자 ID를 FK로 받음
     private User user; // 유저 정보
 
     @Column(name = "views", nullable = false, columnDefinition = "INT UNSIGNED")

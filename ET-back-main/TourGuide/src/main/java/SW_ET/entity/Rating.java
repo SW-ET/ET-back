@@ -36,6 +36,6 @@ public class Rating {
     private Festival festival;  // 축제 정보
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 유저 ID를 FK로 받음
+    @JoinColumn(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 유저 ID를 FK로 받음
     private User user;  // 유저 정보
 }
