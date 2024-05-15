@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
 @Data
-public class UserDto {
+public class UserDto { // 회원가입을 위한 DTO
     @NotBlank(message = "사용자 ID는 필수입니다.")
     private String userId;
 
