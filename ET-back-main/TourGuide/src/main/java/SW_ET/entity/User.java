@@ -17,11 +17,14 @@ public class User {
         @Column(name = "user_id", nullable = false, unique = true, length = 255)  // 새로운 user_id 필드 추가
         private String userId;
 
-        @Column(name = "user_name", nullable = false, unique = false, length = 255)
-        private String userName;
+/*        @Column(name = "user_name", nullable = false, unique = false, length = 255)
+        private String userName;*/
 
-        @Column(name = "user_email", nullable = false, unique = true, length = 255)
-        private String userEmail;
+        @Column(name = "user_Nickname", nullable = false, unique = false, length = 255)
+        private String userNickName;
+
+/*        @Column(name = "user_email", nullable = false, unique = true, length = 255)
+        private String userEmail;*/
 
         @Column(name = "user_password", nullable = false, length = 255)
         private String userPassword;

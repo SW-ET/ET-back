@@ -1,3 +1,4 @@
+/*
 package SW_ET.controller;
 
 import SW_ET.service.MailService;
@@ -29,3 +30,4 @@ public class EmailController {
         }
     }
 }
+*/
