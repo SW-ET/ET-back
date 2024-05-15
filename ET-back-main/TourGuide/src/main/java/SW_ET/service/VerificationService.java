@@ -1,3 +1,4 @@
+/*
 package SW_ET.service;
 
 import org.springframework.stereotype.Service;
@@ -31,3 +32,4 @@ public class VerificationService {
         verificationTokens.remove(userEmail);
     }
 }
+*/

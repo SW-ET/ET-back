@@ -2,6 +2,7 @@ package SW_ET.service;
 
 import SW_ET.dto.UserDto;
 import SW_ET.entity.User;
+import SW_ET.exceptions.UserServiceException;
 import SW_ET.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,28 +18,40 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public boolean isUserIdExists(String userId) {
-        return userRepository.existsById(userId);  // String 타입으로 바로 사용
-    }
-
-    @Override
     public String registerUser(UserDto userDto) {
-        if (isUserIdExists(userDto.getUserId())) {
-            return "User ID already exists.";
+        if (userRepository.existsByUserId(userDto.getUserId())) { // userId는 문자열로 존재여부 확인
+            throw new UserServiceException("User ID '" + userDto.getUserId() + "' already exists.");
         }
-        if (!userDto.getUserPassword().equals(userDto.getConfirmPassword())) {
-            return "Passwords do not match.";
+        if (userRepository.existsByUserNickName(userDto.getUserNickName())) { // 닉네임 존재 여부 확인
+            throw new UserServiceException("User Nickname '" + userDto.getUserNickName() + "' already exists.");
         }
-        User newUser = userDto.toUser();  // UserDto to User 변환 필요
-        newUser.setUserPassword(passwordEncoder.encode(userDto.getUserPassword()));
+        if (!userDto.getUserPassword().equals(userDto.getConfirmPassword())) { // 비밀번호 일치 여부 확인
+            throw new UserServiceException("Passwords do not match.");
+        }
+        User newUser = userDto.toUser();
+        newUser.setUserPassword(passwordEncoder.encode(userDto.getUserPassword())); // 비밀번호 암호화 후 저장
         userRepository.save(newUser);
         return "success";
     }
 
     @Override
+    public boolean isUserIdExists(String userId) {
+        return userRepository.existsByUserId(userId); // 문자열 userId로 존재 여부 확인
+    }
+
+    public User getUserByUserId(String userId) {
+        return userRepository.findByUserId(userId).orElse(null); // 문자열 userId로 유저 정보 조회
+    }
+
+    @Override
+    public boolean isUserNickNameExists(String userNickName) {
+        return userRepository.existsByUserNickName(userNickName); // 닉네임으로 존재 여부 확인
+    }
+
+    @Override
     public boolean validateUser(UserDto userDto) {
-        User user = userRepository.findById(userDto.getUserId()).orElse(null);  // String 타입 사용
-        if (user != null && passwordEncoder.matches(userDto.getUserPassword(), user.getUserPassword())) {
+        User user = userRepository.findByUserId(userDto.getUserId()).orElse(null); // 문자열 userId로 유저 조회
+        if (user != null && passwordEncoder.matches(userDto.getUserPassword(), user.getUserPassword())) { // 비밀번호 일치 여부 검증
             return true;
         }
         return false;

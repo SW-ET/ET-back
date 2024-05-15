@@ -1,3 +1,4 @@
+/*
 package SW_ET.service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,3 +43,4 @@ public class MailService {
         return message;
     }
 }
+*/

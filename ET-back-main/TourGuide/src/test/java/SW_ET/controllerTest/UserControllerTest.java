@@ -1,23 +1,27 @@
-package SW_ET.controllerTest;
+package SW_ET.controller;
 
-import SW_ET.controller.UserController;
+import SW_ET.dto.UserDto;
 import SW_ET.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-@ExtendWith(SpringExtension.class)
-@WebMvcTest(controllers = UserController.class)
+@WebMvcTest(UserController.class)
 public class UserControllerTest {
 
     @Autowired
@@ -26,49 +30,136 @@ public class UserControllerTest {
     @MockBean
     private UserService userService;
 
-    @Test
-    public void whenEmptyInput_thenBadRequest() throws Exception {
-        mockMvc.perform(post("/users/register")
-                        .param("userName", "")  // 비어 있는 입력값
-                        .param("userEmail", "test@example.com")
-                        .param("userPassword", "password123")
-                        .with(csrf()))  // CSRF 토큰 포함
-                .andExpect(status().isBadRequest());  // 400 상태 코드 기대
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Test
-    @WithMockUser
-    public void whenNonKoreanInput_thenBadRequest() throws Exception {
-        mockMvc.perform(post("/users/register")
-                        .param("userName", "JohnDoe")
-                        .param("userEmail", "john@example.com")
-                        .param("userPassword", "password")
-                        .with(csrf()))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("사용자 이름은 한글만 가능합니다.")));
-    }
-
-    @Test
-    @WithMockUser
-    public void whenValidKoreanInput_thenSuccess() throws Exception {
-        mockMvc.perform(post("/users/register")
-                        .param("userName", "홍길동")
-                        .param("userEmail", "hong@example.com")
-                        .param("userPassword", "password")
-                        .with(csrf()))
+    public void testShowRegistrationForm() throws Exception {
+        mockMvc.perform(get("/users/register"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("User registered successfully")));
+                .andExpect(view().name("users/register"))
+                .andExpect(model().attributeExists("user"));
     }
 
     @Test
-    @WithMockUser
-    public void whenInvalidInput_thenBadRequest() throws Exception {
+    public void testRegister_UserIdExists() throws Exception {
+        when(userService.isUserIdExists(any())).thenReturn(true);
+
         mockMvc.perform(post("/users/register")
-                        .param("userName", "John123") // 유효하지 않은 입력
-                        .param("userEmail", "john@example.com")
+                        .param("userId", "testUser")
+                        .param("userNickName", "닉네임")
                         .param("userPassword", "password")
-                        .with(csrf()))
-                .andExpect(status().isBadRequest())
-                .andExpect(content().string(containsString("사용자 이름은 한글만 가능합니다.")));
+                        .param("confirmPassword", "password")
+                        .param("userEmail", "test@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/register"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(model().attribute("error", "User ID already exists."));
+    }
+
+    @Test
+    public void testRegister_UserNickNameExists() throws Exception {
+        when(userService.isUserIdExists(any())).thenReturn(false);
+        when(userService.isUserNickNameExists(any())).thenReturn(true);
+
+        mockMvc.perform(post("/users/register")
+                        .param("userId", "testUser")
+                        .param("userNickName", "닉네임")
+                        .param("userPassword", "password")
+                        .param("confirmPassword", "password")
+                        .param("userEmail", "test@example.com"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/register"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(model().attribute("error", "User Nickname already exists."));
+    }
+
+    @Test
+    public void testRegister_Success() throws Exception {
+        when(userService.isUserIdExists(any())).thenReturn(false);
+        when(userService.isUserNickNameExists(any())).thenReturn(false);
+
+        mockMvc.perform(post("/users/register")
+                        .param("userId", "testUser")
+                        .param("userNickName", "닉네임")
+                        .param("userPassword", "password")
+                        .param("confirmPassword", "password")
+                        .param("userEmail", "test@example.com"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    public void testShowLoginForm() throws Exception {
+        mockMvc.perform(get("/users/login"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/login"));
+    }
+
+    @Test
+    public void testLogin_InvalidCredentials() throws Exception {
+        when(userService.validateUser(any())).thenReturn(false);
+
+        mockMvc.perform(post("/users/login")
+                        .param("userId", "testUser")
+                        .param("userPassword", "wrongpassword"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/login"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(model().attribute("error", "Invalid username or password."));
+    }
+
+    @Test
+    public void testLogin_Success() throws Exception {
+        when(userService.validateUser(any())).thenReturn(true);
+
+        mockMvc.perform(post("/users/login")
+                        .param("userId", "testUser")
+                        .param("userPassword", "password"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/home"));
+    }
+
+    @Test
+    public void testShowHomePage_NotLoggedIn() throws Exception {
+        mockMvc.perform(get("/users/home"))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/login"))
+                .andExpect(model().attributeExists("error"))
+                .andExpect(model().attribute("error", "Please login first."));
+    }
+
+    @Test
+    public void testShowHomePage_LoggedIn() throws Exception {
+        mockMvc.perform(get("/users/home")
+                        .sessionAttr("user", new UserDto()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("users/home"));
+    }
+
+    @Test
+    public void testLogout() throws Exception {
+        mockMvc.perform(get("/users/logout"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/users/login"));
+    }
+
+    @Test
+    public void testRegisterWithInvalidUserNickName() throws Exception {
+        UserDto userDto = new UserDto();
+        userDto.setUserId("string");
+        userDto.setUserNickName("200");
+        userDto.setUserPassword("string");
+        userDto.setConfirmPassword("string");
+        userDto.setUserEmail("string");
+
+        mockMvc.perform(post("/users/register")
+                        .flashAttr("user", userDto))
+                .andExpect(status().isBadRequest());
     }
 }
