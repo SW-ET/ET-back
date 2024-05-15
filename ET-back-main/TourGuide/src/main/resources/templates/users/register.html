@@ -5,18 +5,11 @@
 </head>
 <body>
 <h1>Register</h1>
-<form th:action="@{/users/register}" method="post">
+<form id="registrationForm" th:action="@{/users/register}" method="post" onsubmit="return submitForm();">
     <label for="userId">User ID:</label>
     <input type="text" id="userId" name="userId" required>
     <button type="button" onclick="checkUserId()">Check ID</button>
     <br>
-<!--    <label for="userEmail">Email:</label>
-    <input type="email" id="userEmail" name="userEmail" required>
-    <button type="button" onclick="sendVerificationCode()">Send Verification Code</button>
-    <br>
-    <label for="verificationCode">Verification Code:</label>
-    <input type="text" id="verificationCode" required>
-    <br>-->
     <label for="userNickName">User NickName:</label>
     <input type="text" id="userNickName" name="userNickName" required>
     <br>
@@ -24,9 +17,9 @@
     <input type="password" id="userPassword" name="userPassword" required>
     <br>
     <label for="confirmPassword">Confirm Password:</label>
-    <input type="password" id="confirmPassword" required>
+    <input type="password" id="confirmPassword" name="confirmPassword" required>
     <br>
-    <button type="submit" onclick="return validateForm()">Register</button>
+    <button type="submit">Register</button>
 </form>
 
 <script>
@@ -35,25 +28,33 @@
         // AJAX call to check userId
     }
 
-    function sendVerificationCode() {
-        var email = document.getElementById('userEmail').value;
-        // AJAX call to send verification code to the email
-    }
+    function submitForm() {
+        var form = document.getElementById('registrationForm');
+        var formData = new FormData(form);
+        var jsonObject = {};
 
-    function validateForm() {
-        var password = document.getElementById('userPassword').value;
-        var confirmPassword = document.getElementById('confirmPassword').value;
-        var verificationCode = document.getElementById('verificationCode').value;
+        formData.forEach(function(value, key){
+            jsonObject[key] = value;
+        });
 
-        if (password !== confirmPassword) {
-            alert('Passwords do not match.');
-            return false;
-        }
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(jsonObject)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                // Optionally, redirect or display a success message
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                // Optionally, display an error message
+            });
 
-        // Optionally, verify the verification code here before submitting
-        // Or, the server can handle the verification upon form submission
-
-        return true;
+        return false; // Prevent the form from submitting in the traditional way
     }
 </script>
 </body>

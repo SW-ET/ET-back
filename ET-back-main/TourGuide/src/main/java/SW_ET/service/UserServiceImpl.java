@@ -1,5 +1,6 @@
 package SW_ET.service;
 
+import SW_ET.dto.LoginDto;
 import SW_ET.dto.UserDto;
 import SW_ET.entity.User;
 import SW_ET.exceptions.UserServiceException;
@@ -49,11 +50,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean validateUser(UserDto userDto) {
-        User user = userRepository.findByUserId(userDto.getUserId()).orElse(null); // 문자열 userId로 유저 조회
-        if (user != null && passwordEncoder.matches(userDto.getUserPassword(), user.getUserPassword())) { // 비밀번호 일치 여부 검증
-            return true;
+    public boolean validateUser(LoginDto loginDto) {
+        User user = userRepository.findByUserId(loginDto.getUserId()).orElse(null);
+        if (user == null || !passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
+            return false;
         }
-        return false;
+        return true;
     }
+
 }
