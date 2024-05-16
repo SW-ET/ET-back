@@ -52,10 +52,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean validateUser(LoginDto loginDto) {
         User user = userRepository.findByUserId(loginDto.getUserId()).orElse(null);
-        if (user == null || !passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
-            return false;
+        if (user != null && passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
+            return true;
         }
-        return true;
+        return false;
     }
-
 }

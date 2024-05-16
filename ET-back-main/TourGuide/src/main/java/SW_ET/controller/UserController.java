@@ -47,11 +47,11 @@ public class UserController {
     @Operation(summary = "Show Login Form")
     @GetMapping("/login")
     public String showLoginForm() {
-        return "users/login_proc";
+        return "login_proc";
     }
 
     @Operation(summary = "Login a User")
-    @PostMapping("/login")
+    @PostMapping("/login_proc")  // URL을 "/login_proc"로 변경
     public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, BindingResult result, HttpSession session) {
         if (result.hasErrors()) {
             return ResponseEntity.badRequest().body("Validation errors occurred: " + result.getAllErrors());
@@ -69,7 +69,7 @@ public class UserController {
     public String showHomePage(HttpSession session, Model model) {
         if (session.getAttribute("user") == null) {
             model.addAttribute("error", "Please login first.");
-            return "users/login";
+            return "login_proc";
         }
         return "users/home";
     }
