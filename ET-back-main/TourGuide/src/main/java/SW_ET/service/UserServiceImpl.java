@@ -5,35 +5,47 @@ import SW_ET.dto.UserDto;
 import SW_ET.entity.User;
 import SW_ET.exceptions.UserServiceException;
 import SW_ET.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-@Service
-public class UserServiceImpl implements UserService {
+    @Service
+    @Slf4j
+    public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+        private static final Logger logger = LoggerFactory.getLogger(SW_ET.service.UserServiceImpl.class);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private UserRepository userRepository;
 
-    @Override
-    public String registerUser(UserDto userDto) {
-        if (userRepository.existsByUserId(userDto.getUserId())) { // userId는 문자열로 존재여부 확인
-            throw new UserServiceException("User ID '" + userDto.getUserId() + "' already exists.");
+        @Autowired
+        private PasswordEncoder passwordEncoder;
+
+        @Override
+        public String registerUser(UserDto userDto) {
+            logger.debug("Registering user: {}", userDto.getUserId());
+            if (userRepository.existsByUserId(userDto.getUserId())) {
+                logger.error("User ID '{}' already exists.", userDto.getUserId());
+                throw new UserServiceException("User ID '" + userDto.getUserId() + "' already exists.");
+            }
+            if (userRepository.existsByUserNickName(userDto.getUserNickName())) {
+                logger.error("User Nickname '{}' already exists.", userDto.getUserNickName());
+                throw new UserServiceException("User Nickname '" + userDto.getUserNickName() + "' already exists.");
+            }
+            if (!userDto.getUserPassword().equals(userDto.getConfirmPassword())) {
+                logger.error("Passwords do not match for user '{}'.", userDto.getUserId());
+                throw new UserServiceException("Passwords do not match.");
+            }
+            User newUser = userDto.toUser();
+            newUser.setUserPassword(passwordEncoder.encode(userDto.getUserPassword()));
+            userRepository.save(newUser);
+            logger.info("User '{}' successfully registered.", newUser.getUserId());
+            return "success";
         }
-        if (userRepository.existsByUserNickName(userDto.getUserNickName())) { // 닉네임 존재 여부 확인
-            throw new UserServiceException("User Nickname '" + userDto.getUserNickName() + "' already exists.");
-        }
-        if (!userDto.getUserPassword().equals(userDto.getConfirmPassword())) { // 비밀번호 일치 여부 확인
-            throw new UserServiceException("Passwords do not match.");
-        }
-        User newUser = userDto.toUser();
-        newUser.setUserPassword(passwordEncoder.encode(userDto.getUserPassword())); // 비밀번호 암호화 후 저장
-        userRepository.save(newUser);
-        return "success";
-    }
+
 
     @Override
     public boolean isUserIdExists(String userId) {
@@ -52,9 +64,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public boolean validateUser(LoginDto loginDto) {
         User user = userRepository.findByUserId(loginDto.getUserId()).orElse(null);
-        if (user != null && passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
-            return true;
+        if (user == null) {
+            logger.error("User not found for userId: {}", loginDto.getUserId());
+            return false;
         }
-        return false;
+        if (!passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
+            logger.error("Password mismatch for userId: {}", loginDto.getUserId());
+            return false;
+        }
+        logger.info("User validated successfully for userId: {}", loginDto.getUserId());
+        return true;
     }
+
 }
