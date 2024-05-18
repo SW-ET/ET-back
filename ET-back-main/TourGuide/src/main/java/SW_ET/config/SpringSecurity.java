@@ -7,24 +7,29 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
+import java.util.Arrays;
 
 @Configuration
-@EnableWebSecurity  // 스프링 시큐리티를 활성화하고, 웹 보안을 구성하기 위한 애너테이션
+@EnableWebSecurity
 public class SpringSecurity {
 
-    // 비밀번호 암호화를 위한 PasswordEncoder Bean을 정의합니다.
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(); // BCrypt 해싱 알고리즘을 사용
+        return new BCryptPasswordEncoder();
     }
 
-    // HTTP 보안 구성을 정의하는 SecurityFilterChain Bean을 정의합니다.
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs").permitAll()
-                        .requestMatchers("/users/login_proc", "/users/register", "/resources/**").permitAll()
+                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs", "/users/check-username", "/users/check-nickname").permitAll()  // 추가된 경로 접근 허용
+                        .requestMatchers("users/login","/users/login_proc", "/users/register", "/resources/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -41,5 +46,17 @@ public class SpringSecurity {
                 .csrf().disable();
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("*"));  // 모든 도메인 허용
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));  // 허용된 메서드
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));  // 허용된 헤더
+        configuration.setAllowCredentials(true);  // 크레덴셜 허용
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);  // 모든 경로에 대해 CORS 설정 적용
+        return source;
     }
 }
