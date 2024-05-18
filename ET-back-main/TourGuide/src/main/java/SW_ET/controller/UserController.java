@@ -15,6 +15,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.util.Collections;
+
 @Controller
 @RequestMapping("/users")
 @Tag(name = "User Management", description = "Operations pertaining to user management in the application")
@@ -38,7 +41,8 @@ public class UserController {
         }
         try {
             userService.registerUser(userDto);
-            return ResponseEntity.ok("User successfully registered. Redirecting to login...");
+            // 사용자 등록이 성공하면 로그인 페이지로 리디렉션합니다.
+            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("/users/login_proc")).build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -51,18 +55,14 @@ public class UserController {
     }
 
     @Operation(summary = "Login a User")
-    @PostMapping("/login_proc")  // URL을 "/login_proc"로 변경
-    public ResponseEntity<?> login(@Valid @RequestBody LoginDto loginDto, BindingResult result, HttpSession session) {
-        if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation errors occurred: " + result.getAllErrors());
+    @PostMapping("/login_proc")
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+        boolean isAuthenticated = userService.validateUser(loginDto);
+        if (!isAuthenticated) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials"));
         }
-        if (!userService.validateUser(loginDto)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid username or password.");
-        }
-        session.setAttribute("user", loginDto);
-        return ResponseEntity.ok("User successfully logged in. Redirecting to home page...");
+        return ResponseEntity.ok(Collections.singletonMap("message", "Login successful"));
     }
-
 
     @Operation(summary = "Show Home Page")
     @GetMapping("/home")
@@ -79,5 +79,19 @@ public class UserController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/users/login";
+    }
+
+    @Operation(summary = "Check UserName")
+    @GetMapping("/check-username")
+    public ResponseEntity<Boolean> checkUsernameExists(@RequestParam String username) {
+        boolean exists = userService.isUserIdExists(username);
+        return ResponseEntity.ok(exists);
+    }
+
+    @Operation(summary = "Check UserNickname")
+    @GetMapping("/check-nickname")
+    public ResponseEntity<Boolean> checkNicknameExists(@RequestParam String nickname) {
+        boolean exists = userService.isUserNickNameExists(nickname);
+        return ResponseEntity.ok(exists);
     }
 }
