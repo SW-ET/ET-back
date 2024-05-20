@@ -10,4 +10,5 @@ public interface UserService {
     boolean isUserIdExists(String userId);
     boolean isUserNickNameExists(String userNickName);
     User getUserByUserId(String userId);
+    User getUserByUsername(String username);
 }

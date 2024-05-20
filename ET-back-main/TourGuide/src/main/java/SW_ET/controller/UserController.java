@@ -37,31 +37,32 @@ public class UserController {
     @PostMapping(value = "/register", consumes = "application/json")
     public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto, BindingResult result) {
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation errors occurred: " + result.getAllErrors());
+            return ResponseEntity.badRequest().body(result.getAllErrors());
         }
         try {
             userService.registerUser(userDto);
-            // 사용자 등록이 성공하면 로그인 페이지로 리디렉션합니다.
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("/users/login_proc")).build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
     @Operation(summary = "Show Login Form")
     @GetMapping("/login")
     public String showLoginForm() {
-        return "login_proc";
+        return "users/login_proc";
     }
 
     @Operation(summary = "Login a User")
     @PostMapping("/login_proc")
-    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+    public String login(@RequestBody LoginDto loginDto, HttpSession session) {
         boolean isAuthenticated = userService.validateUser(loginDto);
         if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials"));
+            return "redirect:/users/login?error=true";  // Redirect back to login with error message
         }
-        return ResponseEntity.ok(Collections.singletonMap("message", "Login successful"));
+        // Store user details in session after successful authentication
+        session.setAttribute("user", loginDto);
+        return "redirect:/users/home";  // Redirect to home after successful login
     }
 
     @Operation(summary = "Show Home Page")
@@ -69,7 +70,7 @@ public class UserController {
     public String showHomePage(HttpSession session, Model model) {
         if (session.getAttribute("user") == null) {
             model.addAttribute("error", "Please login first.");
-            return "login_proc";
+            return "users/login_proc";
         }
         return "users/home";
     }
@@ -81,10 +82,10 @@ public class UserController {
         return "redirect:/users/login";
     }
 
-    @Operation(summary = "Check UserName")
-    @GetMapping("/check-username")
-    public ResponseEntity<Boolean> checkUsernameExists(@RequestParam String username) {
-        boolean exists = userService.isUserIdExists(username);
+    @Operation(summary = "Check UserId")
+    @GetMapping("/check-userId")
+    public ResponseEntity<Boolean> checkUsernameExists(@RequestParam String userId) {
+        boolean exists = userService.isUserIdExists(userId);
         return ResponseEntity.ok(exists);
     }
 

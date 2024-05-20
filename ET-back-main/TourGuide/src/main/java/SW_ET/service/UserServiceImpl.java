@@ -16,18 +16,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    private static final Logger logger = LoggerFactory.getLogger(SW_ET.service.UserServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public String registerUser(UserDto userDto) {
-        logger.debug("Registering user: {}", userDto.getUserId());
-        if (userRepository.existsByUserId(userDto.getUserId())) {
+         if (userRepository.existsByUserId(userDto.getUserId())) {
             logger.error("User ID '{}' already exists.", userDto.getUserId());
             throw new UserServiceException("User ID '" + userDto.getUserId() + "' already exists.");
         }
@@ -46,24 +44,23 @@ public class UserServiceImpl implements UserService {
         return "success";
     }
 
-
     @Override
     public boolean isUserIdExists(String userId) {
-        return userRepository.existsByUserId(userId); // 문자열 userId로 존재 여부 확인
+        return userRepository.existsByUserId(userId);
     }
 
     public User getUserByUserId(String userId) {
-        return userRepository.findByUserId(userId).orElse(null); // 문자열 userId로 유저 정보 조회
+        return userRepository.findByUserId(userId).orElse(null);
     }
 
     @Override
     public boolean isUserNickNameExists(String userNickName) {
-        return userRepository.existsByUserNickName(userNickName); // 닉네임으로 존재 여부 확인
+        return userRepository.existsByUserNickName(userNickName);
     }
 
     @Override
     public boolean validateUser(LoginDto loginDto) {
-        User user = userRepository.findByUserId(loginDto.getUserId()).orElse(null);
+        User user = getUserByUsername(loginDto.getUserId()); // Utilizing the new method
         if (user == null) {
             logger.error("User not found for userId: {}", loginDto.getUserId());
             return false;
@@ -75,5 +72,7 @@ public class UserServiceImpl implements UserService {
         logger.info("User validated successfully for userId: {}", loginDto.getUserId());
         return true;
     }
-
+    public User getUserByUsername(String username) {
+        return userRepository.findByUserId(username).orElse(null);
+    }
 }

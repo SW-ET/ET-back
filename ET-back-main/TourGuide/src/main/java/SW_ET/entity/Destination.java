@@ -23,5 +23,5 @@ public class Destination {
     private String destinationDescription; // 여행지 설명
 
     @Column(name = "location", nullable = false, length = 255)
-    private String destinatinLocation;  // 여행지 주소
+    private String destinationLocation;  // 여행지 주소
 }

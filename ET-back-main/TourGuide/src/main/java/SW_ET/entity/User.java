@@ -2,11 +2,16 @@ package SW_ET.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
 
 @Data
 @Entity
 @Table(name="Users")
+@Getter
+@Setter
 public class User {
 
         @Id
@@ -31,4 +36,9 @@ public class User {
 
         @Column(name = "regist_date", nullable = false)
         private LocalDate registDate = LocalDate.now();
+
+        // 권한 필드 추가
+        @Column(name = "user_role", nullable = true, length = 255)
+        private String userRole;  // 예: "ROLE_USER ROLE_ADMIN"
+
 }
