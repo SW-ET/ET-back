@@ -1,45 +1,38 @@
 package SW_ET.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Comments")
-@Getter
-@Setter
 public class Comment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // 자동 증가 설정
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
-    private Long id;  // 댓글 ID
+    private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_comment_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 상위 댓글 ID를 FK로 받음
-    private Comment parentComment;  // 상위 댓글
+    @JoinColumn(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")
+    private Review review; // The review (or main post) this comment is attached to
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 사용자 ID를 FK로 받음
-    private User user;  // 유저 정보
+    @JoinColumn(name = "parent_comment_id", nullable = true, columnDefinition = "INT UNSIGNED")
+    private Comment parentComment; // Reference to parent comment if this is a reply
 
     @ManyToOne(fetch = FetchType.LAZY)
-    // comment : 다 , review : 일
-    @JoinColumn(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 리뷰 ID를 FK로 받음
-    private Review review;  // 리뷰 정보
+    @JoinColumn(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")
+    private User user;
 
     @Lob
-    @Column(name = "content", nullable = false)
-    private String content;  // 댓글 내용
+    @Column(name = "comment_text", nullable = false)
+    private String commentText;
 
-    @Column(name = "depth", nullable = false, columnDefinition = "INT UNSIGNED")
-    private Integer depth;  // 댓글 깊이
+    @Column(name = "comment_date", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime commentDate;
 
-    @Column(name = "post_time", nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime postTime;  // 작성 시간
-
-    @Column(name = "modify_date_time", nullable = true, columnDefinition = "DATETIME")
-    private LocalDateTime modifyDateTime;  // 수정 시간
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<Comment> replies = new HashSet<>(); // Replies to this comment
 }

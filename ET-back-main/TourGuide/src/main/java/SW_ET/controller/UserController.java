@@ -1,5 +1,6 @@
 package SW_ET.controller;
 
+import SW_ET.config.JwtTokenProvider;
 import SW_ET.dto.LoginDto;
 import SW_ET.dto.UserDto;
 import SW_ET.service.UserService;
@@ -10,6 +11,11 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +31,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private AuthenticationManager authenticationManager; // Ensure this bean is configured in your security configuration.
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider; // This should be your JWT utility class that generates the token.
 
     @Operation(summary = "Show Registration Form")
     @GetMapping("/register")
@@ -37,31 +47,35 @@ public class UserController {
     @PostMapping(value = "/register", consumes = "application/json")
     public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto, BindingResult result) {
         if (result.hasErrors()) {
-            return ResponseEntity.badRequest().body("Validation errors occurred: " + result.getAllErrors());
+            return ResponseEntity.badRequest().body(result.getAllErrors());
         }
         try {
             userService.registerUser(userDto);
-            // 사용자 등록이 성공하면 로그인 페이지로 리디렉션합니다.
             return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("/users/login_proc")).build();
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 
     @Operation(summary = "Show Login Form")
     @GetMapping("/login")
     public String showLoginForm() {
-        return "login_proc";
+        return "users/login_proc";
     }
 
     @Operation(summary = "Login a User")
     @PostMapping("/login_proc")
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
-        boolean isAuthenticated = userService.validateUser(loginDto);
-        if (!isAuthenticated) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "Invalid credentials"));
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenProvider.generateToken(authentication);
+            return ResponseEntity.ok(Collections.singletonMap("jwt", jwt)); // Send JWT as a response
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-        return ResponseEntity.ok(Collections.singletonMap("message", "Login successful"));
     }
 
     @Operation(summary = "Show Home Page")
@@ -69,7 +83,7 @@ public class UserController {
     public String showHomePage(HttpSession session, Model model) {
         if (session.getAttribute("user") == null) {
             model.addAttribute("error", "Please login first.");
-            return "login_proc";
+            return "users/login_proc";
         }
         return "users/home";
     }
@@ -81,17 +95,17 @@ public class UserController {
         return "redirect:/users/login";
     }
 
-    @Operation(summary = "Check UserName")
-    @GetMapping("/check-username")
-    public ResponseEntity<Boolean> checkUsernameExists(@RequestParam String username) {
-        boolean exists = userService.isUserIdExists(username);
+    @Operation(summary = "Check if UserId exists")
+    @GetMapping("/check-userId")
+    public ResponseEntity<Boolean> checkUserIdExists(@RequestParam("userId") String userId) {
+        boolean exists = userService.isUserIdExists(userId);
         return ResponseEntity.ok(exists);
     }
 
-    @Operation(summary = "Check UserNickname")
+    @Operation(summary = "Check if UserNickname exists")
     @GetMapping("/check-nickname")
-    public ResponseEntity<Boolean> checkNicknameExists(@RequestParam String nickname) {
-        boolean exists = userService.isUserNickNameExists(nickname);
+    public ResponseEntity<Boolean> checkUserNicknameExists(@RequestParam("userNickName") String userNickName) {
+        boolean exists = userService.isUserNickNameExists(userNickName);
         return ResponseEntity.ok(exists);
     }
 }
