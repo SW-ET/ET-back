@@ -6,6 +6,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL JDBC 드라이버
     hikari:
       maximum-pool-size: 20  # HikariCP 최대 연결 풀 크기 설정
+
   mail:
     host: smtp.gmail.com
     port: 587
@@ -23,9 +24,9 @@ spring:
           writetimeout: 5000
     auth-code-expiration-millis: 1800000  # 30 * 60 * 1000 == 30분
   jpa:
-    generate-ddl : true
+    generate-ddl: true
     hibernate:
-      ddl-auto: update  # 데이터베이스 테이블 자동 업데이트 설정
+      ddl-auto: create  # 데이터베이스 테이블 자동 업데이트 설정
     properties:
       jakarta:
         persistence:
@@ -52,6 +53,11 @@ spring:
 
 server:
   port: 8080  # 애플리케이션 서버 포트 번호
+  servlet:
+    session:
+      cookie:
+        name: JSESSIONID  # 세션 쿠키 이름 설정
+        http-only: true  # HttpOnly 플래그를 true로 설정하여 JavaScript가 쿠키에 접근할 수 없도록 함
 
 logging:
   level:

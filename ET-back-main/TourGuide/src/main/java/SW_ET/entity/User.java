@@ -8,8 +8,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.time.LocalDate;
+
 @Data
 @Entity
 @Table(name="Users")
@@ -32,7 +32,7 @@ public class User implements UserDetails {
         private LocalDate registDate = LocalDate.now();
 
         @Enumerated(EnumType.STRING)
-        @Column(nullable = true) // Null allowed as per your requirement
+        @Column(nullable = true)
         private UserRole userRole;
 
         @Override
