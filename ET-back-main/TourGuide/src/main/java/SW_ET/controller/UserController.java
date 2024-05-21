@@ -89,7 +89,7 @@ public class UserController {
         return "users/login_proc";
     }
 
-    @Operation(summary = "Log in a user", description = "Log in a user and return a JWT")
+    @Operation(summary = "Login a user", description = "Log in a user and return a JWT")
     @PostMapping("/login_proc")
     public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
         if (isAuthenticated()) {
@@ -113,31 +113,29 @@ public class UserController {
     }
 
 
-    @Operation(summary = "Show Home Page")
+    @Operation(summary = "Show Home Page with conditional content")
     @GetMapping("/home")
-    public String showHomePage(Model model, HttpSession session) {
+    public String showHomePage(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
-            return "redirect:/users/dashboard";
-        }
-        return "/users/home";
-    }
-
-    @Operation(summary = "Show Dashboard")
-    @GetMapping("/dashboard")
-    public String showDashboard(Model model, HttpSession session) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
-
-        model.addAttribute("username", username);
-        return "dashboard";
+        boolean isAuthenticated = authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal());
+        model.addAttribute("isAuthenticated", isAuthenticated);
+        return "/users/home";  // 로그인 한 유저와 로그인 안한 유저가 같은 페이지를 공유함.. 클라이언트에서 권한에 따라 보여주는 페이지 나눠주면 됨.
     }
 
 
     @Operation(summary = "Logout a User")
     @GetMapping("/logout")
-    public String logout(HttpSession session) {
+    public String logout(HttpServletRequest request, HttpSession session) {
+        // 세션 무효화
         session.invalidate();
+
+        // JWT 무효화
+        String token = jwtTokenProvider.resolveToken(request);
+        if (token != null) {
+            jwtTokenProvider.invalidateToken(token);
+        }
+
+        // 로그인 폼으로 리다이렉션
         return "redirect:/users/login";
     }
 
