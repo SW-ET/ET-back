@@ -1,35 +1,29 @@
 package SW_ET.entity;
 
+import SW_ET.entity.types.UserRole;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Collection;
+import java.util.Collections;
 
 import java.time.LocalDate;
-
 @Data
 @Entity
 @Table(name="Users")
-@Getter
-@Setter
-public class User {
-
+public class User implements UserDetails {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
-        private Long userKeyId;  // user_id를 user_key_id로 변경
+        private Long userKeyId;
 
-        @Column(name = "user_id", nullable = false, unique = true, length = 255)  // 새로운 user_id 필드 추가
+        @Column(name = "user_id", nullable = false, unique = true, length = 255)
         private String userId;
 
-/*        @Column(name = "user_name", nullable = false, unique = false, length = 255)
-        private String userName;*/
-
-        @Column(name = "user_Nickname", nullable = false, unique = false, length = 255)
+        @Column(name = "user_Nickname", nullable = false, unique = true, length = 255)
         private String userNickName;
-
-/*        @Column(name = "user_email", nullable = false, unique = true, length = 255)
-        private String userEmail;*/
 
         @Column(name = "user_password", nullable = false, length = 255)
         private String userPassword;
@@ -37,8 +31,42 @@ public class User {
         @Column(name = "regist_date", nullable = false)
         private LocalDate registDate = LocalDate.now();
 
-        // 권한 필드 추가
-        @Column(name = "user_role", nullable = true, length = 255)
-        private String userRole;  // 예: "ROLE_USER ROLE_ADMIN"
+        @Enumerated(EnumType.STRING)
+        @Column(nullable = true) // Null allowed as per your requirement
+        private UserRole userRole;
 
+        @Override
+        public Collection<? extends GrantedAuthority> getAuthorities() {
+                return userRole != null ? Collections.singletonList(new SimpleGrantedAuthority(userRole.name())) : Collections.emptyList();
+        }
+
+        @Override
+        public String getPassword() {
+                return userPassword;
+        }
+
+        @Override
+        public String getUsername() {
+                return userId;
+        }
+
+        @Override
+        public boolean isAccountNonExpired() {
+                return true;  // Consider your business logic here
+        }
+
+        @Override
+        public boolean isAccountNonLocked() {
+                return true;  // Consider your business logic here
+        }
+
+        @Override
+        public boolean isCredentialsNonExpired() {
+                return true;  // Consider your business logic here
+        }
+
+        @Override
+        public boolean isEnabled() {
+                return true;  // Consider your business logic here
+        }
 }

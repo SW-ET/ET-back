@@ -44,8 +44,8 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        String username = authentication.getName();
-        User user = userService.getUserByUsername(username);
+        String userNickname = authentication.getName();
+        User user = userService.getUserByUserNickname(userNickname);
         if (user == null || !user.getUserRole().equals("REVIEWER")) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
