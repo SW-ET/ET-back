@@ -1,5 +1,6 @@
 package SW_ET.controller;
 
+import SW_ET.config.JwtTokenProvider;
 import SW_ET.dto.LoginDto;
 import SW_ET.dto.UserDto;
 import SW_ET.service.UserService;
@@ -10,6 +11,11 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -25,6 +31,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private AuthenticationManager authenticationManager; // Ensure this bean is configured in your security configuration.
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider; // This should be your JWT utility class that generates the token.
 
     @Operation(summary = "Show Registration Form")
     @GetMapping("/register")
@@ -55,14 +65,17 @@ public class UserController {
 
     @Operation(summary = "Login a User")
     @PostMapping("/login_proc")
-    public String login(@RequestBody LoginDto loginDto, HttpSession session) {
-        boolean isAuthenticated = userService.validateUser(loginDto);
-        if (!isAuthenticated) {
-            return "redirect:/users/login?error=true";  // Redirect back to login with error message
+    public ResponseEntity<?> login(@RequestBody LoginDto loginDto) {
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginDto.getUserId(), loginDto.getUserPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtTokenProvider.generateToken(authentication);
+            return ResponseEntity.ok(Collections.singletonMap("jwt", jwt)); // Send JWT as a response
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-        // Store user details in session after successful authentication
-        session.setAttribute("user", loginDto);
-        return "redirect:/users/home";  // Redirect to home after successful login
     }
 
     @Operation(summary = "Show Home Page")
@@ -82,17 +95,17 @@ public class UserController {
         return "redirect:/users/login";
     }
 
-    @Operation(summary = "Check UserId")
+    @Operation(summary = "Check if UserId exists")
     @GetMapping("/check-userId")
-    public ResponseEntity<Boolean> checkUsernameExists(@RequestParam String userId) {
+    public ResponseEntity<Boolean> checkUserIdExists(@RequestParam("userId") String userId) {
         boolean exists = userService.isUserIdExists(userId);
         return ResponseEntity.ok(exists);
     }
 
-    @Operation(summary = "Check UserNickname")
+    @Operation(summary = "Check if UserNickname exists")
     @GetMapping("/check-nickname")
-    public ResponseEntity<Boolean> checkNicknameExists(@RequestParam String nickname) {
-        boolean exists = userService.isUserNickNameExists(nickname);
+    public ResponseEntity<Boolean> checkUserNicknameExists(@RequestParam("userNickName") String userNickName) {
+        boolean exists = userService.isUserNickNameExists(userNickName);
         return ResponseEntity.ok(exists);
     }
 }
