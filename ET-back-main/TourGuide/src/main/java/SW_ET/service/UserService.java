@@ -31,13 +31,15 @@ public class UserService{
 
 
     public String registerUser(UserDto userDto) {
+        if (userDto.getUserId().length() < 4) {
+            throw new UserServiceException("User ID must be at least 4 characters long.");
+        }
+        if (userDto.getUserPassword().length() < 8) {
+            throw new UserServiceException("Password must be at least 8 characters long.");
+        }
         if (userRepository.existsByUserId(userDto.getUserId())) {
             logger.error("User ID '{}' already exists.", userDto.getUserId());
             throw new UserServiceException("User ID '" + userDto.getUserId() + "' already exists.");
-        }
-        if (userRepository.existsByUserNickName(userDto.getUserNickName())) {
-            logger.error("User Nickname '{}' already exists.", userDto.getUserNickName());
-            throw new UserServiceException("User Nickname '" + userDto.getUserNickName() + "' already exists.");
         }
         if (!userDto.getUserPassword().equals(userDto.getConfirmPassword())) {
             logger.error("Passwords do not match for user '{}'.", userDto.getUserId());
@@ -69,13 +71,35 @@ public class UserService{
 
     public String login(LoginDto loginDto) {
         User user = userRepository.findByUserId(loginDto.getUserId()).orElse(null);
-        if (user != null && passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
-            Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            return jwtTokenProvider.generateToken(authentication);
+
+        // 로그: 사용자 검색 시도
+        logger.debug("Attempting to find user with userId: {}", loginDto.getUserId());
+
+        if (user != null) {
+            // 로그: 사용자 발견
+            logger.debug("User found: {}", loginDto.getUserId());
+
+            if (passwordEncoder.matches(loginDto.getUserPassword(), user.getUserPassword())) {
+                // 로그: 비밀번호 일치
+                logger.debug("Password matches for user: {}", loginDto.getUserId());
+
+                Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                String jwt = jwtTokenProvider.generateToken(authentication);
+                // 로그: JWT 생성
+                logger.debug("JWT generated for user: {}", loginDto.getUserId());
+
+                return jwt;
+            } else {
+                // 로그: 비밀번호 불일치
+                logger.error("Invalid credentials for user: {}. Password does not match.", loginDto.getUserId());
+                throw new UserServiceException("Invalid credentials. Password does not match.");
+            }
         } else {
-            logger.error("Invalid credentials for user: {}", loginDto.getUserId());
-            throw new UserServiceException("Invalid credentials");
+            // 로그: 사용자 미발견
+            logger.error("No user found with userId: {}", loginDto.getUserId());
+            throw new UserServiceException("Invalid credentials. No such user.");
         }
     }
 
