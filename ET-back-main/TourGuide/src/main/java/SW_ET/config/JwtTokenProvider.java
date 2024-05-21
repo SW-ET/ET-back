@@ -16,18 +16,18 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.crypto.SecretKey;
 
-
 @Component
 public class JwtTokenProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenProvider.class);
-
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -39,6 +39,8 @@ public class JwtTokenProvider {
     private long validityInMilliseconds;
 
     private SecretKey secretKey;
+    private Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet(); // 토큰을 블랙리스트에 추가.. 클라이언트 측에서도 로직을 추가해야함
+
 
     @PostConstruct
     protected void init() {
@@ -70,6 +72,10 @@ public class JwtTokenProvider {
     }
 
     public boolean validateToken(String token) {
+        if (tokenBlacklist.contains(token)) {
+            log.error("Token is blacklisted: {}", token);
+            return false;
+        }
         try {
             Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
             log.debug("Token is valid.");
@@ -106,5 +112,10 @@ public class JwtTokenProvider {
             return bearerToken.substring(7);
         }
         return null;
+    }
+
+    public void invalidateToken(String token) {
+        tokenBlacklist.add(token);
+        log.info("Token invalidated: {}", token);
     }
 }
