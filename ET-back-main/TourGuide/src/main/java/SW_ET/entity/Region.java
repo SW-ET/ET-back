@@ -12,8 +12,8 @@ import lombok.Setter;
 public class Region {
 
     @Id
-    @GeneratedValue
-    @Column(name = "region_id", nullable = false, columnDefinition  = "INT UNSIGNED AUTO_INCREMENT")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "region_id", nullable = false, columnDefinition  = "INT UNSIGNED")
     private Long regionId;
 
     @Column(name = "region", nullable = false, length = 255)

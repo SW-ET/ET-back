@@ -1,23 +1,25 @@
 package SW_ET.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Table
+@Getter
+@Setter
+@Table(name = "RatingAggregates")
 public class RatingAggregate {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)  // 자동 증가 설정
-    @Column(name = "ra_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
-    private Long ratingAverageId;  // 집계 테이블의 ID
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(name = "average_rating", nullable = false, columnDefinition = "DECIMAL(2, 1)")
-    private Double averageRating;  // 평점 평균
+    @Column(name = "item_type", nullable = false)
+    private String itemType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 여행지 ID를 FK로 받음
-    private Destination destination;  // 여행지 정보
+    @Column(name = "item_id", nullable = false)
+    private Long itemId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = false, columnDefinition = "INT UNSIGNED")  // 축제 ID를 FK로 받음
-    private Festival festival;  // 축제 정보
+    @Column(name = "average_rating", nullable = false)
+    private Double averageRating;
 }

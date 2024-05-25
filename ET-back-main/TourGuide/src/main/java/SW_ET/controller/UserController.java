@@ -22,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -56,7 +55,6 @@ public class UserController {
         return "users/register";
     }
 
-
     @Operation(summary = "Register a new User")
     @PostMapping(value = "/register", consumes = "application/json")
     public ResponseEntity<?> register(@Valid @RequestBody UserDto userDto, BindingResult result) {
@@ -71,7 +69,9 @@ public class UserController {
         try {
             userService.registerUser(userDto);
             log.info("User registered successfully.");
-            return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("/users/login_proc")).build();
+            //return ResponseEntity.status(HttpStatus.SEE_OTHER).location(URI.create("/users/login_proc")).build();
+            return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("resultCode", "0000"));
+
         } catch (Exception e) {
             log.error("User registration failed: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));

@@ -16,7 +16,7 @@ import java.time.LocalDate;
 public class User implements UserDetails {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Column(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+        @Column(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")
         private Long userKeyId;
 
         @Column(name = "user_id", nullable = false, unique = true, length = 255)
