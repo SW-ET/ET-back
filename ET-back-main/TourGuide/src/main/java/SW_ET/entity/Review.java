@@ -15,7 +15,7 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long reviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,24 +43,22 @@ public class Review {
     @Column(name = "review_date_modi", nullable = true)
     private LocalDateTime reviewDateModi;
 
-    @Column(name = "likes", nullable = false)
-    private Long likeNumber;
-
-    @Column(name = "dislikes", nullable = false)
-    private Long dislikeNumber;
-
     @Column(name = "tags", nullable = true)
     private String tags;
 
     @Column(name = "use_yn", nullable = false, length = 1)
-    private String useYn;
+    private boolean useYn;  // Modified from boolean to String based on your database design needs.
 
     @Column(name = "deleted_time", nullable = true)
     private LocalDateTime deletedTime;
 
-    @Column(name = "deleted_true", nullable = false, length = 1)
-    private String deletedTrue;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;  // Field renamed for clarity and initialized as false by default.
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<Image> images;
+    private Set<ReviewImages> images;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Region region;
 }

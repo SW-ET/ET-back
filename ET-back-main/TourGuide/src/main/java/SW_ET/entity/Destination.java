@@ -12,7 +12,7 @@ public class Destination {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "destination_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long destinationId; // 여행지 ID (기본 키)
 
     @Column(name = "destination_name", nullable = false, length = 255)

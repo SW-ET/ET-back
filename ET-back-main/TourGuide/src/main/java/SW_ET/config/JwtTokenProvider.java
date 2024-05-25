@@ -39,8 +39,7 @@ public class JwtTokenProvider {
     private long validityInMilliseconds;
 
     private SecretKey secretKey;
-    private Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet(); // 토큰을 블랙리스트에 추가.. 클라이언트 측에서도 로직을 추가해야함
-
+    private Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
 
     @PostConstruct
     protected void init() {

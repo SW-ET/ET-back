@@ -14,7 +14,7 @@ public class FestivalRegion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 지동 증가
-    @Column(name = "fr_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "fr_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long id; // 중간 테이블의 ID
 
     @ManyToOne(fetch = FetchType.LAZY)

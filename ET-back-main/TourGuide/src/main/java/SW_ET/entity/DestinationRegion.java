@@ -13,7 +13,7 @@ public class DestinationRegion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // 지동 증가
-    @Column(name = "dr_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "dr_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long id; // 중간 테이블의 ID
 
     @ManyToOne(fetch = FetchType.LAZY)

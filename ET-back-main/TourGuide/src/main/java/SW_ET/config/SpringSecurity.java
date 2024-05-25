@@ -20,7 +20,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity(debug = true)  // Consider turning off debug in production
 public class SpringSecurity {
 
     private final JwtTokenProvider jwtTokenProvider;
@@ -43,13 +43,14 @@ public class SpringSecurity {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors().and()
-                .csrf().disable() // jwt 방식이므로 csrf 비활성화.
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .csrf().disable()  // Disable CSRF as JWT is used which is inherently protected against CSRF
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // No session will be created or used by Spring Security
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs", "/users/check-userId", "/users/check-nickname").permitAll()
                 .requestMatchers("/users/register", "/users/login_proc", "/resources/**", "/images/**", "/css/**", "/js/**", "/users/home").permitAll()
-                .requestMatchers("/users/logout", "/users/dashboard").authenticated()
+                .requestMatchers("/reviews/**").hasAuthority("USER")
+                .requestMatchers("/users/logout").authenticated()
                 .anyRequest().authenticated()
                 .and()
                 .addFilterBefore(new JwtTokenFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
@@ -64,8 +65,8 @@ public class SpringSecurity {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
-        configuration.setAllowedOrigins(Arrays.asList("*")); // 모든 출처 허용
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS")); // 모든 메서드 허용
+        configuration.setAllowedOrigins(Arrays.asList("*"));  // Consider listing specific origins in production
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "accept", "Origin", "Access-Control-Request-Method", "Access-Control-Request-Headers"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
