@@ -37,4 +37,5 @@ public class ReviewImages {
 
     @Column(name = "file_size")
     private Long fileSize;  // 파일 크기
+
 }

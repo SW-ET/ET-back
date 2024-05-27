@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -22,14 +24,6 @@ public class Review {
     @JoinColumn(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_id", nullable = true, columnDefinition = "INT UNSIGNED")
-    private Destination destination;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = true, columnDefinition = "INT UNSIGNED")
-    private Festival festival;
-
     @Column(name = "review_title", nullable = false, length = 255)
     private String reviewTitle;
 
@@ -42,9 +36,6 @@ public class Review {
 
     @Column(name = "review_date_modi", nullable = true)
     private LocalDateTime reviewDateModi;
-
-    @Column(name = "tags", nullable = true)
-    private String tags;
 
     @Column(name = "use_yn", nullable = false, length = 1)
     private boolean useYn;  // Modified from boolean to String based on your database design needs.
@@ -61,4 +52,8 @@ public class Review {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private Region region;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewImages> reviewImages = new ArrayList<>();
+
 }

@@ -67,3 +67,4 @@ logging:
     org.hibernate.SQL: DEBUG  # Hibernate SQL 쿼리 로깅 수준
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"  # 콘솔 로그 출력 패턴
+
