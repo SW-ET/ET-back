@@ -17,7 +17,7 @@ public class Favorite {
     @Column(name = "favorite_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long id; // 찜목록 ID
 
-    @Column(name = "item_type", nullable = false, length = 255)
+    @Column(name = "item_type", nullable = false)
     private String itemType;  // 찜하는 항목의 유형
 
     @Column(name = "created_at" , nullable = false, columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP")

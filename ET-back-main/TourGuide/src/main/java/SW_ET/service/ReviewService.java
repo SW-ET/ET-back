@@ -2,16 +2,15 @@ package SW_ET.service;
 
 import SW_ET.dto.ReviewDto;
 import SW_ET.entity.Review;
-import SW_ET.entity.User;
-import SW_ET.entity.Destination;
+import SW_ET.entity.Region;
 import SW_ET.repository.ReviewRepository;
-import SW_ET.repository.UserRepository;
-import SW_ET.repository.DestinationRepository;
+import SW_ET.repository.RegionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,62 +20,74 @@ public class ReviewService {
     private ReviewRepository reviewRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private RegionRepository regionRepository;
 
-    @Autowired
-    private DestinationRepository destinationRepository;
+    private boolean isAuthenticated() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal());
+    }  // 권한 검증
 
+    // 리뷰 생성
+    @Transactional
     public Review createReview(ReviewDto reviewDto) {
-        Optional<User> user = userRepository.findById(reviewDto.getUserId());
-        Optional<Destination> destination = destinationRepository.findById(reviewDto.getDestinationId());
+        if (!isAuthenticated()) {
+            throw new SecurityException("Authentication required to create reviews.");
+        }
+
+        Region region = regionRepository.findById(reviewDto.getRegionId())
+                .orElseThrow(() -> new RuntimeException("Region not found"));
 
         Review review = new Review();
-        user.ifPresent(review::setUser);
-        destination.ifPresent(review::setDestination);
-
+        review.setRegion(region);
         review.setReviewTitle(reviewDto.getReviewTitle());
         review.setReviewText(reviewDto.getReviewText());
-        review.setTags(reviewDto.getTags());
-        review.setDatePosted(LocalDateTime.now()); // Defaulting to now if not provided
-        review.setReviewDateModi(reviewDto.getReviewDateModi());
-        review.setLikeNumber(reviewDto.getLikeNumber());
-        review.setDislikeNumber(reviewDto.getDislikeNumber());
-        review.setUseYn(reviewDto.getUseYn());
-        review.setDeletedTrue(reviewDto.getDeletedTrue());
-        review.setDeletedTime(reviewDto.getDeletedTime());
+        review.setDatePosted(reviewDto.getDatePosted());
+        review.setUseYn(true);
 
         return reviewRepository.save(review);
     }
 
-    public List<Review> getReviewsByTag(String tag) {
-        return reviewRepository.findByTagsContaining(tag);
+
+    // 리뷰 조회 (JPQL 조인 사용)
+    @Transactional
+    public ReviewDto getReview(Long reviewId) {
+        Review review = reviewRepository.findReviewWithRegion(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        // 데이터 전달을 위한 DTO 생성과 설정
+        ReviewDto reviewDto = new ReviewDto();
+        reviewDto.setReviewTitle(review.getReviewTitle());
+        reviewDto.setReviewText(review.getReviewText());
+        reviewDto.setRegionName(review.getRegion().getRegionName());
+        reviewDto.setSubRegionName(review.getRegion().getSubRegionName());
+        return reviewDto;
     }
 
-    public Review findById(Long reviewId) {
-        return reviewRepository.findById(reviewId).orElse(null);
-    }
-
-    public Review updateReview(ReviewDto reviewDto) {
-        Optional<Review> reviewOptional = reviewRepository.findById(reviewDto.getReviewId());
-        if (!reviewOptional.isPresent()) {
-            return null; // Or throw an exception indicating not found
+    // 리뷰 수정
+    @Transactional
+    public Review updateReview(Long reviewId, ReviewDto reviewDto) {
+        if (!isAuthenticated()) {
+            throw new SecurityException("Authentication required to update reviews.");
         }
 
-        Review review = reviewOptional.get();
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
         review.setReviewTitle(reviewDto.getReviewTitle());
         review.setReviewText(reviewDto.getReviewText());
-        review.setTags(reviewDto.getTags());
-        review.setReviewDateModi(LocalDateTime.now()); // Updating the modification date
-        review.setLikeNumber(reviewDto.getLikeNumber());
-        review.setDislikeNumber(reviewDto.getDislikeNumber());
         return reviewRepository.save(review);
     }
 
-    public boolean deleteReview(Long reviewId) {
-        if (reviewRepository.existsById(reviewId)) {
-            reviewRepository.deleteById(reviewId);
-            return true;
+
+    // 리뷰 삭제
+    @Transactional
+    public void deleteReview(Long reviewId) {
+        if (!isAuthenticated()) {
+            throw new SecurityException("Authentication required to delete reviews.");
         }
-        return false;
+
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        reviewRepository.delete(review);
     }
 }

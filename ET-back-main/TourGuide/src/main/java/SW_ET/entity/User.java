@@ -8,15 +8,15 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Collection;
 import java.util.Collections;
-
 import java.time.LocalDate;
+
 @Data
 @Entity
 @Table(name="Users")
 public class User implements UserDetails {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Column(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+        @Column(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")
         private Long userKeyId;
 
         @Column(name = "user_id", nullable = false, unique = true, length = 255)
@@ -32,7 +32,7 @@ public class User implements UserDetails {
         private LocalDate registDate = LocalDate.now();
 
         @Enumerated(EnumType.STRING)
-        @Column(nullable = true) // Null allowed as per your requirement
+        @Column(nullable = true)
         private UserRole userRole;
 
         @Override

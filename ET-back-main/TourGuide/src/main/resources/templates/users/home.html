@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title>Home</title>
+  <title>Home Page</title>
 </head>
 <body>
-<h1>Welcome to Your Dashboard</h1>
-<p th:text="'Hello, ' + ${session.user.userName} + '!'"></p>
-<a href="/logout">Logout</a>
+<h1>Welcome to the Home Page</h1>
+
+<div th:if="${isAuthenticated}">
+  <p>You are logged in!</p>
+  <form action="/users/logout" method="post">
+    <button type="submit">Logout</button>
+  </form>
+</div>
+
+<div th:if="${!isAuthenticated}">
+  <p>You are not logged in!</p>
+  <a href="/users/login">Login</a>
+</div>
 </body>
 </html>

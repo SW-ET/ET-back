@@ -12,7 +12,7 @@ public class Festival {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)  //자동 증가 설정
-    @Column(name = "festival_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "festival_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long festivalId;  // 축제 ID
 
     @Column(name = "festival_name", nullable = false, length = 255)

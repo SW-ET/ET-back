@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -15,20 +17,12 @@ public class Review {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "review_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long reviewId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_key_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "destination_id", nullable = true, columnDefinition = "INT UNSIGNED")
-    private Destination destination;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "festival_id", nullable = true, columnDefinition = "INT UNSIGNED")
-    private Festival festival;
 
     @Column(name = "review_title", nullable = false, length = 255)
     private String reviewTitle;
@@ -43,24 +37,23 @@ public class Review {
     @Column(name = "review_date_modi", nullable = true)
     private LocalDateTime reviewDateModi;
 
-    @Column(name = "likes", nullable = false)
-    private Long likeNumber;
-
-    @Column(name = "dislikes", nullable = false)
-    private Long dislikeNumber;
-
-    @Column(name = "tags", nullable = true)
-    private String tags;
-
     @Column(name = "use_yn", nullable = false, length = 1)
-    private String useYn;
+    private boolean useYn;  // Modified from boolean to String based on your database design needs.
 
     @Column(name = "deleted_time", nullable = true)
     private LocalDateTime deletedTime;
 
-    @Column(name = "deleted_true", nullable = false, length = 1)
-    private String deletedTrue;
+    @Column(name = "is_deleted", nullable = false)
+    private boolean isDeleted = false;  // Field renamed for clarity and initialized as false by default.
 
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<Image> images;
+    private Set<ReviewImages> images;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Region region;
+
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReviewImages> reviewImages = new ArrayList<>();
+
 }

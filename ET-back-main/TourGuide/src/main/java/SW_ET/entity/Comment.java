@@ -1,17 +1,21 @@
 package SW_ET.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
 @Entity
+@Getter
+@Setter
 @Table(name = "Comments")
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id", nullable = false, columnDefinition = "INT UNSIGNED AUTO_INCREMENT")
+    @Column(name = "comment_id", nullable = false, columnDefinition = "INT UNSIGNED")
     private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
