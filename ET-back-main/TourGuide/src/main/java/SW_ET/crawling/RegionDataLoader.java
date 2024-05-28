@@ -18,7 +18,7 @@ public class RegionDataLoader implements CommandLineRunner {
     private RegionCsvService regionCsvService;
 
     @Autowired
-    private RegionService regionService;
+    private RegionDataService regionService;
 
     @Override
     public void run(String... args) throws Exception {
