@@ -24,11 +24,11 @@ public class Region {
     @JoinColumn(name = "parent_id") // 외래키로 parent_id 사용
     private Region parent;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true) // 하위 지역 목록
-    private Set<Region> children;
-
     @Column(name = "subRegion_name", nullable = false, length = 255)
     private String subRegionName; // 강남구, 은평구 등등
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true) // 하위 지역 목록
+    private Set<Region> children;
 
     @OneToMany(mappedBy = "region", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Destination> destinations;

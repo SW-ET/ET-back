@@ -53,7 +53,7 @@ public class Review {
     @JoinColumn(name = "region_id")
     private Region region;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ReviewImages> reviewImages = new ArrayList<>();
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ReviewImages> reviewImages;
 
 }

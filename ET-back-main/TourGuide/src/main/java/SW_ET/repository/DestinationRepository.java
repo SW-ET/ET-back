@@ -1,4 +1,4 @@
-/*
+package SW_ET.repository;/*
 package SW_ET.repository;
 
 import SW_ET.entity.Destination;

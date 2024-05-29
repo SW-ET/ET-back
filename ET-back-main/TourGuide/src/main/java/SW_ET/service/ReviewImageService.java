@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class ReviewImageService {
@@ -19,26 +21,33 @@ public class ReviewImageService {
 
     private final Path rootLocation = Paths.get("이미지를 저장할 경로");
 
+    public List<ReviewImages> storeImages(List<MultipartFile> files, Long reviewId) throws IOException {
+        List<ReviewImages> storedImages = new ArrayList<>();
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                storedImages.add(storeImage(file, reviewId));
+            }
+        }
+        return storedImages;
+    }
+
     public ReviewImages storeImage(MultipartFile file, Long reviewId) throws IOException {
         if (file.isEmpty()) {
-            throw new RuntimeException("비어있는 파일을 저장할 수 없습니다.");
+            throw new RuntimeException("Cannot store empty file.");
         }
         try {
             Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
             ReviewImages reviewImage = new ReviewImages();
-            reviewImage.setImageUrl(rootLocation.toString() + "/" + file.getOriginalFilename());
+            reviewImage.setImageUrl(rootLocation.toString() + "/" + file.getOriginalFilename()); // Use getOriginalFilename here
             reviewImage.setImagePath(rootLocation.toString());
             reviewImage.setFileName(file.getOriginalFilename());
             reviewImage.setContentType(file.getContentType());
             reviewImage.setFileSize(file.getSize());
-
-            // reviewId와 userId 설정 필요
-            // reviewImage.setReview(review);
-            // reviewiumage.setUser(user);
+            // Code to fetch and set Review object goes here
 
             return reviewImageRepository.save(reviewImage);
         } catch (Exception e) {
-            throw new RuntimeException("파일 저장 실패", e);
+            throw new RuntimeException("Failed to store file", e);
         }
     }
 }
