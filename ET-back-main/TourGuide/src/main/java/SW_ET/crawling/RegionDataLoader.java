@@ -23,7 +23,7 @@ public class RegionDataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         logger.trace("Starting CSV loading process...");
-        String csvFilePath = "C:\\Users\\sh980\\workspace\\regions.csv"; // 파일 경로 조정
+        String csvFilePath = "C:\\workspace\\regions.csv"; // 파일 경로 조정
         List<RegionDto> regionList = regionCsvService.readRegionsFromCsv(csvFilePath);
         logger.trace("CSV data loaded, number of records: " + regionList.size());
         regionService.saveRegions(regionList);
