@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>리뷰 작성 페이지</title>
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- 별점 평가 시 사용 -->
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/footer.css}">
+    <th:block th:replace="/fragment/config.html :: configFragment"></th:block>
+
+</head>
+<body>
+<div id="header">
+    <th:block th:replace="/fragment/header.html :: headerFragment"></th:block>
+</div>
+<div id="reviewForm">
+
+
+
+
+</div>
+<div id="footer">
+    <th:block th:replace="/fragment/footer.html :: footerFragment"></th:block>
+</div>
+<script>
+    // 권한이 있으면 접근 가능
+
+</script>
+<script src="/js/jwtRead.js"></script>
+</body>
+</html>
