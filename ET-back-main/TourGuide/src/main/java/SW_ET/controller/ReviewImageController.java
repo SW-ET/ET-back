@@ -1,3 +1,4 @@
+package SW_ET.controller;/*
 package SW_ET.controller;
 
 import SW_ET.entity.ReviewImages;
@@ -17,10 +18,10 @@ public class ReviewImageController {
     @PostMapping("/upload/{reviewId}")
     public ResponseEntity<ReviewImages> uploadImage(@RequestParam("file") MultipartFile file, @PathVariable Long reviewId) {
         try {
-            ReviewImages savedImage = reviewImageService.storeImage(file, reviewId);
+            ReviewImages savedImage = reviewImageService.storeImages(file, reviewId);
             return ResponseEntity.ok(savedImage);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);
         }
     }
-}
+}*/

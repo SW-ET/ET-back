@@ -1,5 +1,6 @@
 package SW_ET.repository;
 
+import SW_ET.dto.ReviewDto;
 import SW_ET.entity.Destination;
 import SW_ET.entity.Review;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,4 +20,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> { // 리�
     // 모든 리뷰와 관련된 지역 정보를 함께 가져오기.
     @Query("SELECT r FROM Review r JOIN FETCH r.region")
     List<Review> findAllReviewsWithRegion();
+
+    // 리뷰 아이디 검색.
+    @Query("SELECT r FROM Review r WHERE r.reviewId = :reviewId")
+    Optional<Review> findByReviewId(@Param("reviewId") Long reviewId);
 }

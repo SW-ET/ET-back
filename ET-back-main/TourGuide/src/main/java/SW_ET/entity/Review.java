@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -46,9 +44,6 @@ public class Review {
     @Column(name = "is_deleted", nullable = false)
     private boolean isDeleted = false;  // Field renamed for clarity and initialized as false by default.
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private Set<ReviewImages> images;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private Region region;
@@ -56,4 +51,10 @@ public class Review {
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ReviewImages> reviewImages;
 
+    @PrePersist
+    public void prePersist() {
+        if (datePosted == null) {
+            datePosted = LocalDateTime.now();
+        }
+    }
 }
