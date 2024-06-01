@@ -1,6 +1,7 @@
 package SW_ET.config;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
@@ -16,8 +18,10 @@ import org.springframework.stereotype.Component;
 import jakarta.annotation.PostConstruct;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +45,7 @@ public class JwtTokenProvider {
     private SecretKey secretKey;
     private Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
 
+
     @PostConstruct
     protected void init() {
         if (secretKeyString.length() < 32) {
@@ -54,7 +59,9 @@ public class JwtTokenProvider {
 
     public String generateToken(Authentication authentication) {
         Claims claims = Jwts.claims().setSubject(((UserDetails) authentication.getPrincipal()).getUsername());
-        claims.put("auth", authentication.getAuthorities());
+        claims.put("roles", authentication.getAuthorities().stream()
+                .map(grantedAuthority -> grantedAuthority.getAuthority()) // "ROLE_" 접두어가 이미 포함된다고 가정
+                .collect(Collectors.toList()));
 
         Date now = new Date();
         Date validity = new Date(now.getTime() + validityInMilliseconds);
@@ -66,7 +73,6 @@ public class JwtTokenProvider {
                 .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
 
-        log.info("Generated token for user: {}", claims.getSubject());
         return token;
     }
 
@@ -86,10 +92,15 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        String username = getUsername(token);
-        UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-        log.debug("Authenticated user: {}", username);
-        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+        Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+        String username = claims.getBody().getSubject();
+        List<SimpleGrantedAuthority> authorities = ((List<?>) claims.getBody().get("roles")).stream()
+                .map(authority -> new SimpleGrantedAuthority("ROLE_" + authority))
+                .collect(Collectors.toList());
+
+        log.info("Extracted roles from token for user {}: {}", username, authorities);
+
+        return new UsernamePasswordAuthenticationToken(username, null, authorities);
     }
 
     public String getUsername(String token) {

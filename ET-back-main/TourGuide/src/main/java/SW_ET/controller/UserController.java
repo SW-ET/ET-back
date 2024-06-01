@@ -43,6 +43,12 @@ public class UserController {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    private boolean isAuthenticated() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal());
+    }
+
+
     @Operation(summary = "Show Registration Form")
     @GetMapping("/register")
     public String showRegistrationForm(Model model, HttpSession session) {
@@ -105,11 +111,6 @@ public class UserController {
         } catch (UserServiceException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
-    }
-
-    private boolean isAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal());
     }
 
 
