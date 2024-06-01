@@ -1,124 +1,110 @@
 package SW_ET.service;
 
 import SW_ET.dto.ReviewDto;
-import SW_ET.entity.Review;
 import SW_ET.entity.Region;
+import SW_ET.entity.Review;
 import SW_ET.entity.User;
-import SW_ET.repository.ReviewRepository;
 import SW_ET.repository.RegionRepository;
+import SW_ET.repository.ReviewRepository;
 import SW_ET.repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReviewService {
 
-    private static final Logger log = LoggerFactory.getLogger(ReviewService.class);
+    @Autowired
+    private final ReviewRepository reviewRepository;
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private RegionRepository regionRepository;
 
+
     @Autowired
-    private UserRepository userRepository;
-    private boolean isAuthenticated() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal());
+    public ReviewService(ReviewRepository reviewRepository) {
+        this.reviewRepository = reviewRepository;
     }
 
-    // 리뷰 생성
-    @Transactional
-    public Review createReview(ReviewDto reviewDto) {
-        log.info("Creating review with title: {}, text: {}", reviewDto.getReviewTitle(), reviewDto.getReviewText());
-
-        if (reviewDto.getReviewTitle() == null || reviewDto.getReviewText() == null) {
-            log.error("Review title or text cannot be null");
-            throw new IllegalArgumentException("Review title and text must not be null");
-        }
-        if (reviewDto.getUserKeyId() == null || reviewDto.getRegionId() == null) {
-            log.error("User ID and Region ID cannot be null - User ID: {}, Region ID: {}", reviewDto.getUserKeyId(), reviewDto.getRegionId());
-            throw new IllegalArgumentException("User ID and Region ID must not be null");
-        }
-
-        User user = userRepository.findById(Long.valueOf(reviewDto.getUserKeyId()))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID: " + reviewDto.getUserKeyId()));
+    public ReviewDto createReview(ReviewDto reviewDto) {
+        User user = userRepository.findById(reviewDto.getUserKeyId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         Region region = regionRepository.findById(reviewDto.getRegionId())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid region ID: " + reviewDto.getRegionId()));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid region ID"));
 
         Review review = new Review();
         review.setUser(user);
         review.setRegion(region);
         review.setReviewTitle(reviewDto.getReviewTitle());
         review.setReviewText(reviewDto.getReviewText());
-        review.setDatePosted(reviewDto.getDatePosted() != null ? reviewDto.getDatePosted() : LocalDateTime.now());
-        review.setUseYn(reviewDto.getUseYn() != null ? reviewDto.getUseYn() : false);
-        review.setDeleted(reviewDto.getIsDeleted() != null ? reviewDto.getIsDeleted() : false);
-
-        try {
-            review = reviewRepository.save(review);
-            log.info("Review saved successfully with ID: {}", review.getReviewId());
-            return review;
-        } catch (Exception e) {
-            log.error("Failed to save review due to: ", e);
-            throw new IllegalStateException("Failed to save review due to database integrity issues", e);
-        }
+        review.setUseYn(reviewDto.getUseYn());
+        review.setDatePosted(LocalDateTime.now());
+        reviewRepository.save(review);
+        return convertToDto(review);
     }
 
-    // 리뷰 조회 (JPQL 조인 사용)
-    @Transactional
-    public ReviewDto getReview(Long reviewId) {
-        log.info("Getting review with id: {}", reviewId);
-        Review review = reviewRepository.findReviewWithRegion(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-
-        // 데이터 전달을 위한 DTO 생성과 설정
-        ReviewDto reviewDto = new ReviewDto();
-        reviewDto.setReviewTitle(review.getReviewTitle());
-        reviewDto.setReviewText(review.getReviewText());
-        reviewDto.setRegionId(review.getRegion().getRegionId());
-        log.info("Retrieved review with title: {}", reviewDto.getReviewTitle());
-        return reviewDto;
+    public List<ReviewDto> getAllReviews() {
+        return reviewRepository.findAll().stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
-    // 리뷰 수정
-    @Transactional
-    public Review updateReview(Long reviewId, ReviewDto reviewDto) {
-        log.info("Updating review with id: {}", reviewId);
-        if (!isAuthenticated()) {
-            throw new SecurityException("Authentication required to update reviews.");
-        }
-
-        Review review = reviewRepository.findById(reviewId)
+    public ReviewDto getReviewById(Long id) {
+        Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
+        return convertToDto(review);
+    }
 
+    public void deleteReview(Long id) {
+        reviewRepository.deleteById(id);
+    }
+
+    public ReviewDto updateReview(Long id, ReviewDto reviewDto) {
+        Review existingReview = reviewRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+        updateEntityFromDto(existingReview, reviewDto);
+        existingReview = reviewRepository.save(existingReview);
+        return convertToDto(existingReview);
+    }
+
+    private Review convertToEntity(ReviewDto reviewDto) {
+        Review review = new Review();
         review.setReviewTitle(reviewDto.getReviewTitle());
         review.setReviewText(reviewDto.getReviewText());
-        Review updatedReview = reviewRepository.save(review);
-        log.info("Updated review with id: {}", updatedReview.getReviewId());
-        return updatedReview;
+        review.setUseYn(reviewDto.getUseYn());
+        return review;
     }
 
-    // 리뷰 삭제
-    @Transactional
-    public void deleteReview(Long reviewId) {
-        log.info("Deleting review with id: {}", reviewId);
-        if (!isAuthenticated()) {
-            throw new SecurityException("Authentication required to delete reviews.");
+    private ReviewDto convertToDto(Review review) {
+        ReviewDto dto = new ReviewDto();
+
+        dto.setReviewId(review.getReviewId());
+        if (review.getUser() != null) {
+            dto.setUserKeyId(review.getUser().getUserKeyId());  // User의 ID를 가져와서 설정
         }
 
-        Review review = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new RuntimeException("Review not found"));
-        reviewRepository.delete(review);
-        log.info("Deleted review with id: {}", reviewId);
+        if (review.getRegion() != null) {
+            dto.setRegionId(review.getRegion().getRegionId()); // Region의 ID를 가져와서 설정
+        }
+        dto.setReviewTitle(review.getReviewTitle());
+        dto.setReviewText(review.getReviewText());
+        dto.setDatePosted(review.getDatePosted());
+        dto.setReviewDateModi(review.getReviewDateModi());
+        dto.setDeletedTime(review.getDeletedTime());
+        dto.setIsDeleted(review.isDeleted());
+        dto.setUseYn(review.isUseYn());
+        return dto;
+    }
+
+    private void updateEntityFromDto(Review existingReview, ReviewDto reviewDto) {
+        existingReview.setReviewTitle(reviewDto.getReviewTitle());
+        existingReview.setReviewText(reviewDto.getReviewText());
+        // Update other necessary fields
     }
 }

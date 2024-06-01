@@ -1,43 +1,38 @@
 package SW_ET.controller;
 
 import SW_ET.dto.RegionDto;
-import SW_ET.entity.Region;
+import SW_ET.dto.RegionGroupDto;
 import SW_ET.service.RegionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/regions")
+@RequestMapping("/api/regions")
 public class RegionController {
 
+    private final RegionService regionService;
+
     @Autowired
-    private RegionService regionService;
-
-    // 모든 상위 지역 목록을 조회
-    @GetMapping("/top")
-    public ResponseEntity<List<RegionDto>> getAllTopRegions() {
-        List<Region> regions = regionService.findTopRegions();
-        List<RegionDto> dtos = regions.stream().map(this::convertToDto).collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+    public RegionController(RegionService regionService) {
+        this.regionService = regionService;
     }
 
-    // 특정 상위 지역의 하위 지역 목록을 조회
-    @GetMapping("/{regionId}/subregions")
-    public ResponseEntity<List<RegionDto>> getSubRegions(@PathVariable Long regionId) {
-        List<Region> subRegions = regionService.findSubRegionsByParentId(regionId);
-        List<RegionDto> dtos = subRegions.stream().map(this::convertToDto).collect(Collectors.toList());
-        return ResponseEntity.ok(dtos);
+    // 지역 그룹과 각 그룹에 포함된 지역 및 하위 지역 정보를 가져오는 API
+    @GetMapping("/groups") // 헤더에서 사용
+    public ResponseEntity<List<RegionGroupDto>> getAllRegionGroups() {
+        List<RegionGroupDto> groups = regionService.getAllRegionGroups();
+        return ResponseEntity.ok(groups);
     }
 
-    private RegionDto convertToDto(Region region) {
-        RegionDto dto = new RegionDto();
-        dto.setRegionId(region.getRegionId());
-        dto.setRegionName(region.getRegionName());
-        dto.setSubRegionName(region.getSubRegionName());
-        return dto;
+    // 모든 지역과 각 지역의 하위 지역 정보를 가져오는 API
+    @GetMapping  // 사용자가 리뷰 적을때 지역을 선택할 때 사용
+    public ResponseEntity<List<RegionDto>> getAllRegions() {
+        List<RegionDto> regions = regionService.getAllRegions();
+        return ResponseEntity.ok(regions);
     }
 }

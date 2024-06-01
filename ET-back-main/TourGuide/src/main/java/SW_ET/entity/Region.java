@@ -3,7 +3,7 @@ package SW_ET.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -18,18 +18,12 @@ public class Region {
     private Long regionId;
 
     @Column(name = "region_name", nullable = false, length = 255)
-    private String regionName;  // 서울시, 경기도 등등
+    private String regionName; // 서울시, 경기도 등
 
-    @ManyToOne(fetch = FetchType.LAZY) // 상위 지역 참조
-    @JoinColumn(name = "parent_id") // 외래키로 parent_id 사용
-    private Region parent;
-
-    @Column(name = "subRegion_name", nullable = false, length = 255)
-    private String subRegionName; // 강남구, 은평구 등등
-
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true) // 하위 지역 목록
-    private Set<Region> children;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_group_id")
+    private RegionGroup regionGroup; // 상위 지역 그룹 참조
 
     @OneToMany(mappedBy = "region", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Destination> destinations;
+    private Set<SubRegion> subRegions = new HashSet<>(); // 하위 지역 목록
 }
