@@ -1,0 +1,23 @@
+package SW_ET.entity;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@Table(name = "RegionGroup")
+public class RegionGroup {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long RegionGroupId;
+
+    @Column(nullable = false)
+    private String RegionGroupName; // 예: "수도권", "영남권"
+
+    @OneToMany(mappedBy = "regionGroup", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Region> regions; // 지역 그룹에 속한 지역 리스트
+}

@@ -2,30 +2,14 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile default="true" name="Default" enabled="true" />
-      <profile name="Gradle Imported" enabled="true">
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.32/17d46b3e205515e1e8efd3ee4d57ce8018914163/lombok-1.18.32.jar" />
-        </processorPath>
-        <module name="TourGuide.main" />
-      </profile>
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-configuration-processor/3.0.3/fadcb8f1558db61596dec6e523d66305410dbcdc/spring-boot-configuration-processor-3.0.3.jar" />
           <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.26/8f8cf0372abf564913e9796623aac4c8ea44025a/lombok-1.18.26.jar" />
         </processorPath>
-        <module name="com.example.TourGuide.main" />
+        <module name="TourGuide.main" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="SW_ET.TourGuide" target="17" />
-      <module name="SW_ET.TourGuide.main" target="17" />
-      <module name="SW_ET.TourGuide.test" target="17" />
-      <module name="TourGuide" target="17" />
-      <module name="TourGuide.main" target="17" />
-      <module name="TourGuide.test" target="17" />
-    </bytecodeTargetLevel>
   </component>
 </project>
