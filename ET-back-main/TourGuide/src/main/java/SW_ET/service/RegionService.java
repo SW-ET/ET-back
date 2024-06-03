@@ -63,8 +63,22 @@ public class RegionService {
         }
     }
 
-    
-    // 헤더에 지역 정보 동적표시 메소드
+
+    // 지역 그룹에 속하는 메인 지역만 반환 (ex 수도권 -> 경기도  .. 헤더에서 쓰일 메소드)
+    public List<RegionDto> getRegionsByGroup(Long groupId) {
+        List<Region> regions = regionRepository.findByRegionGroupId(groupId);
+        return regions.stream().map(region -> new RegionDto(region.getRegionId(), region.getRegionName(), null)).collect(Collectors.toList());
+    }
+
+    // 메인 지역 ID에 따라 하위 지역 조회 ( 서울시 -> 강남구 등등 .. 리뷰 작성시 쓰일 메소드)
+    public List<SubRegionDto> getSubRegionsByRegion(Long RegionId) {
+        List<SubRegion> subRegions = subRegionRepository.findByRegionId(RegionId);
+        return subRegions.stream()
+                .map(subRegion -> new SubRegionDto(subRegion.getSubRegionId(), subRegion.getSubRegionName()))
+                .collect(Collectors.toList());
+    }
+
+    // 모든 지역 그룹 반환
     public List<RegionGroupDto> getAllRegionGroups() {
         List<RegionGroup> groups = regionGroupRepository.findAll();
         return groups.stream().map(group -> {
@@ -75,6 +89,7 @@ public class RegionService {
                 RegionDto regionDto = new RegionDto();
                 regionDto.setRegionId(region.getRegionId());
                 regionDto.setRegionName(region.getRegionName());
+                // 메인 지역에 속하는 하위 지역만 표시
                 regionDto.setSubRegions(region.getSubRegions().stream()
                         .map(subRegion -> new SubRegionDto(subRegion.getSubRegionId(), subRegion.getSubRegionName()))
                         .collect(Collectors.toList()));
@@ -82,18 +97,5 @@ public class RegionService {
             }).collect(Collectors.toList()));
             return dto;
         }).collect(Collectors.toList());
-    }
-
-    
-// region, sub_region 선택 메소드
-    public List<RegionDto> getAllRegions() {
-        List<Region> regions = regionRepository.findAll();
-        return regions.stream().map(region -> new RegionDto(
-                region.getRegionId(),
-                region.getRegionName(),
-                region.getSubRegions().stream()
-                        .map(subRegion -> new SubRegionDto(subRegion.getSubRegionId(), subRegion.getSubRegionName()))
-                        .collect(Collectors.toList())
-        )).collect(Collectors.toList());
     }
 }

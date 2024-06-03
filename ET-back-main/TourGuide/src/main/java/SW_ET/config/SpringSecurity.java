@@ -50,7 +50,7 @@ public class SpringSecurity {
                 .authorizeHttpRequests()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs", "/users/check-userId", "/users/check-nickname").permitAll()
                 .requestMatchers("/users/home", "/users/register", "/users/login_proc", "/resources/**", "/images/**", "/css/**", "/js/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()  // 모든 사용자가 리뷰 조회를 할 수 있도록 허용
+                .requestMatchers(HttpMethod.GET, "/api/**").permitAll()  // 모든 사용자가 리뷰 조회를 할 수 있도록 허용
                 .requestMatchers(HttpMethod.POST, "/api/reviews").hasAuthority("ROLE_USER")  // 리뷰 생성은 인증된 사용자만 가능
                 .requestMatchers(HttpMethod.PUT, "/api/reviews/{id}").hasAuthority("ROLE_USER")  // 리뷰 수정은 인증된 사용자만 가능
                 .requestMatchers(HttpMethod.DELETE, "/api/reviews/{id}").hasAuthority("ROLE_USER")  // 리뷰 삭제는 인증된 사용자만 가능

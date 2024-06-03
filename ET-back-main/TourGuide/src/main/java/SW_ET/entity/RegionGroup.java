@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @Table(name = "RegionGroup")
-public class RegionGroup {
+public class RegionGroup { // 수도권, 강원권 등
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long RegionGroupId;
