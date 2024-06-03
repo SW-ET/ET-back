@@ -3,9 +3,11 @@ package SW_ET.service;
 import SW_ET.dto.ReviewDto;
 import SW_ET.entity.Region;
 import SW_ET.entity.Review;
+import SW_ET.entity.SubRegion;
 import SW_ET.entity.User;
 import SW_ET.repository.RegionRepository;
 import SW_ET.repository.ReviewRepository;
+import SW_ET.repository.SubRegionRepository;
 import SW_ET.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -29,6 +31,9 @@ public class ReviewService {
     private RegionRepository regionRepository;
 
     @Autowired
+    private SubRegionRepository subRegionRepository;
+
+    @Autowired
     public ReviewService(ReviewRepository reviewRepository) {
         this.reviewRepository = reviewRepository;
     }
@@ -38,15 +43,21 @@ public class ReviewService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
         Region region = regionRepository.findById(reviewDto.getRegionId())
                 .orElseThrow(() -> new IllegalArgumentException("Invalid region ID"));
+        SubRegion subRegion = subRegionRepository.findById(reviewDto.getSubRegionId())
+                .orElseThrow(() -> new IllegalArgumentException("Invalid sub-region ID"));
+
 
         Review review = new Review();
         review.setUser(user);
         review.setRegion(region);
+        review.setSubRegion(subRegion); // SubRegion 설정
         review.setReviewTitle(reviewDto.getReviewTitle());
         review.setReviewText(reviewDto.getReviewText());
         review.setUseYn(reviewDto.getUseYn());
         review.setDatePosted(LocalDateTime.now());
-        reviewRepository.save(review);
+
+        review = reviewRepository.save(review);
+
         return convertToDto(review);
     }
 
@@ -98,6 +109,17 @@ public class ReviewService {
         return review;
     }
 
+    // 지역 ID에 따라 리뷰를 조회하는 메소드
+    public List<ReviewDto> getReviewsByRegion(Long regionId) {
+        return reviewTransactionalScope(regionId);
+    }
+
+    private List<ReviewDto> reviewTransactionalScope(Long regionId){
+        return reviewRepository.findByRegionId(regionId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     private ReviewDto convertToDto(Review review) {
         ReviewDto dto = new ReviewDto();
 
@@ -109,6 +131,10 @@ public class ReviewService {
         if (review.getRegion() != null) {
             dto.setRegionId(review.getRegion().getRegionId()); // Region의 ID를 가져와서 설정
         }
+
+        if (review.getSubRegion() != null) {
+            dto.setSubRegionId(review.getSubRegion().getSubRegionId());
+        }
         dto.setReviewTitle(review.getReviewTitle());
         dto.setReviewText(review.getReviewText());
         dto.setDatePosted(review.getDatePosted());
@@ -116,13 +142,16 @@ public class ReviewService {
         dto.setDeletedTime(review.getDeletedTime());
         dto.setIsDeleted(review.isDeleted());
         dto.setUseYn(review.isUseYn());
+
         return dto;
     }
 
     private void updateEntityFromDto(Review existingReview, ReviewDto reviewDto) {
+
         existingReview.setReviewTitle(reviewDto.getReviewTitle());
         existingReview.setReviewText(reviewDto.getReviewText());
         existingReview.setUseYn(reviewDto.getUseYn());
+        existingReview.setReviewDateModi(LocalDateTime.now());
 
         if (reviewDto.getDatePosted() != null) {
             existingReview.setDatePosted(reviewDto.getDatePosted());
@@ -133,7 +162,7 @@ public class ReviewService {
         if (reviewDto.getDeletedTime() != null) {
             existingReview.setDeletedTime(reviewDto.getDeletedTime());
         }
-        // Null check for Boolean fields
+
         if (reviewDto.getIsDeleted() != null) {
             existingReview.setIsDeleted(reviewDto.getIsDeleted());
         }
@@ -148,6 +177,12 @@ public class ReviewService {
             Region region = regionRepository.findById(reviewDto.getRegionId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid region ID"));
             existingReview.setRegion(region);
+        }
+
+        if (reviewDto.getSubRegionId() != null) {
+            SubRegion subRegion = subRegionRepository.findById(reviewDto.getSubRegionId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid subRegion ID"));
+            existingReview.setSubRegion(subRegion);
         }
     }
 }

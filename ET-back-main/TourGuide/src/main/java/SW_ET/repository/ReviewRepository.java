@@ -21,6 +21,10 @@ public interface ReviewRepository extends JpaRepository<Review, Long> { // 리�
     @Query("SELECT r FROM Review r JOIN FETCH r.region")
     List<Review> findAllReviewsWithRegion();
 
+    // 지역 ID에 따라 리뷰를 조회하는 JPQL 쿼리
+    @Query("SELECT r FROM Review r WHERE r.region.regionId = :regionId")
+    List<Review> findByRegionId(@Param("regionId") Long regionId);
+
     // 리뷰 아이디 검색.
     @Query("SELECT r FROM Review r WHERE r.reviewId = :reviewId")
     Optional<Review> findByReviewId(@Param("reviewId") Long reviewId);

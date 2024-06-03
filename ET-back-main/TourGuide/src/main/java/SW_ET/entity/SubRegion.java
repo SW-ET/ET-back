@@ -8,7 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Table(name = "SubRegion")
-public class SubRegion {
+public class SubRegion { // 은펴구 , 강남구 등 세부지역
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

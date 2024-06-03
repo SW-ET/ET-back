@@ -10,7 +10,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Table(name = "Region")
-public class Region {
+public class Region { // 서울시, 경기도 등
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

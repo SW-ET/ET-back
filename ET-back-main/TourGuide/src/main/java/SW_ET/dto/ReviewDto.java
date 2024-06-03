@@ -23,5 +23,5 @@ public class ReviewDto {
     private LocalDateTime deletedTime;
     private Boolean useYn;
     private Long regionId;
-
+    private Long subRegionId;
 }

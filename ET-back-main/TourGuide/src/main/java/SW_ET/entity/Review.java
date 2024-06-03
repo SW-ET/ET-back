@@ -48,6 +48,10 @@ public class Review {
     @JoinColumn(name = "region_id")
     private Region region;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name= "sub_region_id")
+    private SubRegion subRegion;
+
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ReviewImages> reviewImages;
 
@@ -57,7 +61,6 @@ public class Review {
             datePosted = LocalDateTime.now();
         }
     }
-
     public void setIsDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
