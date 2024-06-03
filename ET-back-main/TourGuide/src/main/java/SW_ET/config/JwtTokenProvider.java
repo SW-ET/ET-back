@@ -1,9 +1,7 @@
 package SW_ET.config;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import SW_ET.repository.UserRepository;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +11,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.annotation.PostConstruct;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -36,20 +34,22 @@ public class JwtTokenProvider {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Value("${security.jwt.token.secret-key:secret-key}")
     private String secretKeyString;
 
-    @Value("${security.jwt.token.expire-length:3600000}") // 1h
-    private long validityInMilliseconds;
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
 
     private SecretKey secretKey;
     private Set<String> tokenBlacklist = ConcurrentHashMap.newKeySet();
 
-
     @PostConstruct
     protected void init() {
-        if (secretKeyString.length() < 32) {
-            this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        if (secretKeyString.length() < 64) { // 64 바이트는 512 비트
+            this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
             log.warn("Provided secret key is too short. A secure key has been generated.");
         } else {
             this.secretKey = Keys.hmacShaKeyFor(secretKeyString.getBytes());
@@ -58,22 +58,20 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
-        Claims claims = Jwts.claims().setSubject(((UserDetails) authentication.getPrincipal()).getUsername());
-        claims.put("roles", authentication.getAuthorities().stream()
-                .map(grantedAuthority -> grantedAuthority.getAuthority()) // "ROLE_" 접두어가 이미 포함된다고 가정
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("sub", userDetails.getUsername());
+        claims.put("roles", userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList()));
+        claims.put("userKeyId", getUserKeyIdFromDatabase(userDetails.getUsername())); // 'userKeyId' 추가
 
-        Date now = new Date();
-        Date validity = new Date(now.getTime() + validityInMilliseconds);
-
-        String token = Jwts.builder()
+        return Jwts.builder()
                 .setClaims(claims)
-                .setIssuedAt(now)
-                .setExpiration(validity)
-                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(secretKey, SignatureAlgorithm.HS512)
                 .compact();
-
-        return token;
     }
 
     public boolean validateToken(String token) {
@@ -92,7 +90,7 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String token) {
-        Jws<Claims> claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token);
+        Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(secretKey).build().parseClaimsJws(token);
         String username = claims.getBody().getSubject();
         List<SimpleGrantedAuthority> authorities = ((List<?>) claims.getBody().get("roles")).stream()
                 .map(authority -> new SimpleGrantedAuthority("ROLE_" + authority))
@@ -127,5 +125,30 @@ public class JwtTokenProvider {
     public void invalidateToken(String token) {
         tokenBlacklist.add(token);
         log.info("Token invalidated: {}", token);
+    }
+
+    // JwtTokenProvider에서 사용자 ID 추출
+    public Long getUserKeyIdFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        log.debug("Claims: {}", claims);
+
+        // 클레임이 존재하는지 확인
+        if (claims.get("userKeyId") == null) {
+            log.error("Claim 'userKeyId' is missing in the token.");
+            throw new NullPointerException("Claim 'userKeyId' is missing in the token.");
+        }
+
+        return Long.valueOf(claims.get("userKeyId").toString());
+    }
+
+    private Long getUserKeyIdFromDatabase(String username) {
+        return userRepository.findByUserId(username) // userId 사용
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with userId: " + username))
+                .getUserKeyId();
     }
 }

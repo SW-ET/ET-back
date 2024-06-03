@@ -8,7 +8,9 @@ import SW_ET.repository.RegionRepository;
 import SW_ET.repository.ReviewRepository;
 import SW_ET.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,7 +27,6 @@ public class ReviewService {
 
     @Autowired
     private RegionRepository regionRepository;
-
 
     @Autowired
     public ReviewService(ReviewRepository reviewRepository) {
@@ -61,16 +62,32 @@ public class ReviewService {
         return convertToDto(review);
     }
 
-    public void deleteReview(Long id) {
-        reviewRepository.deleteById(id);
-    }
-
-    public ReviewDto updateReview(Long id, ReviewDto reviewDto) {
+    // 리뷰 수정
+    public ReviewDto updateReview(Long id, ReviewDto reviewDto, Long userKeyId) {
         Review existingReview = reviewRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        // 사용자 권한 검증
+        if (!existingReview.getUser().getUserKeyId().equals(userKeyId)) {
+            throw new AccessDeniedException("You do not have permission to modify this review.");
+        }
+
         updateEntityFromDto(existingReview, reviewDto);
         existingReview = reviewRepository.save(existingReview);
         return convertToDto(existingReview);
+    }
+
+    // 리뷰 삭제
+    public void deleteReview(Long id, Long userId) {
+        Review review = reviewRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        // 사용자 권한 검증
+        if (!review.getUser().getUserKeyId().equals(userId)) {
+            throw new AccessDeniedException("You do not have permission to delete this review.");
+        }
+
+        reviewRepository.deleteById(id);
     }
 
     private Review convertToEntity(ReviewDto reviewDto) {
@@ -105,6 +122,32 @@ public class ReviewService {
     private void updateEntityFromDto(Review existingReview, ReviewDto reviewDto) {
         existingReview.setReviewTitle(reviewDto.getReviewTitle());
         existingReview.setReviewText(reviewDto.getReviewText());
-        // Update other necessary fields
+        existingReview.setUseYn(reviewDto.getUseYn());
+
+        if (reviewDto.getDatePosted() != null) {
+            existingReview.setDatePosted(reviewDto.getDatePosted());
+        }
+        if (reviewDto.getReviewDateModi() != null) {
+            existingReview.setReviewDateModi(reviewDto.getReviewDateModi());
+        }
+        if (reviewDto.getDeletedTime() != null) {
+            existingReview.setDeletedTime(reviewDto.getDeletedTime());
+        }
+        // Null check for Boolean fields
+        if (reviewDto.getIsDeleted() != null) {
+            existingReview.setIsDeleted(reviewDto.getIsDeleted());
+        }
+
+        // User 및 Region 엔티티 연결 (ID를 통해 조회 후 설정)
+        if (reviewDto.getUserKeyId() != null) {
+            User user = userRepository.findById(reviewDto.getUserKeyId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid user ID"));
+            existingReview.setUser(user);
+        }
+        if (reviewDto.getRegionId() != null) {
+            Region region = regionRepository.findById(reviewDto.getRegionId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid region ID"));
+            existingReview.setRegion(region);
+        }
     }
 }
