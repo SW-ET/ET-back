@@ -57,4 +57,8 @@ public class Review {
             datePosted = LocalDateTime.now();
         }
     }
+
+    public void setIsDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
+    }
 }

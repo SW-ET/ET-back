@@ -3,6 +3,7 @@ package SW_ET.config;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -49,7 +50,10 @@ public class SpringSecurity {
                 .authorizeHttpRequests()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs", "/users/check-userId", "/users/check-nickname").permitAll()
                 .requestMatchers("/users/home", "/users/register", "/users/login_proc", "/resources/**", "/images/**", "/css/**", "/js/**").permitAll()
-                .requestMatchers("/api/reviews/**").hasAuthority("ROLE_USER")
+                .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()  // 모든 사용자가 리뷰 조회를 할 수 있도록 허용
+                .requestMatchers(HttpMethod.POST, "/api/reviews").hasAuthority("ROLE_USER")  // 리뷰 생성은 인증된 사용자만 가능
+                .requestMatchers(HttpMethod.PUT, "/api/reviews/{id}").hasAuthority("ROLE_USER")  // 리뷰 수정은 인증된 사용자만 가능
+                .requestMatchers(HttpMethod.DELETE, "/api/reviews/{id}").hasAuthority("ROLE_USER")  // 리뷰 삭제는 인증된 사용자만 가능
                 .requestMatchers("/users/logout").authenticated()
                 .anyRequest().authenticated()
                 .and()
